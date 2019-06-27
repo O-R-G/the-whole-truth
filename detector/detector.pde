@@ -82,6 +82,8 @@ public void draw_terms(int currentterm) {
 private int random_walk(int pointer_old) {
     int increment = int(random(-2,2));
     int pointer_new = (pointer_old + increment) % terms.length;
+    if (pointer_new < 0) 
+        pointer_new = 0;
     println(pointer_new);
     return pointer_new;
 }

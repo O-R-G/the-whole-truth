@@ -20,14 +20,12 @@ PFont mono;
 Table table;
 Verdict[] verdicts;
 
-// should be passed to Verdict
-// add sound control and timing control from kings
-// for now using raw millis()
-int current_time = 0;               // position in soundfile (millisec)
+int millis_start = 0;
+int current_time = 0;               // position in soundfile (millis)
+Boolean playing = false;
 
-// dev
-int counter;
-int pointer;
+int pointer;    // current index in verdicts
+int counter;    
 
 public void setup() {
     size(640, 360);
@@ -36,19 +34,11 @@ public void setup() {
     background(255);
 
     load_csv();
-
-    sample = new SoundFile(this, "the-whole-truth.wav");
-    // add sound control and timing control from kings
-    while (second() % 5 !=0) {
-        // wait so that all three apps start audio at same time 
-    }    
-    sample.play();
-    // sample.amp(0.0);     // force fake sync for now
-
     mono = createFont("fonts/Speech-to-text-normal.ttf", 48);
     textFont(mono);
 
-    // dev
+    sample = new SoundFile(this, "the-whole-truth.wav");
+
     counter = 0;
     pointer = 0;
 }
@@ -56,23 +46,19 @@ public void setup() {
 public void draw() {
     background(192);
 
-/*
-    current_time=millis();      // this is lazy, see kings.pde
-
-    if (verdicts[pointer].spoken()) {
-        verdicts[pointer].display(int(width/8),int(height/2));
-    }
-*/
-
-    verdicts[pointer].display(int(width/8),int(height/2));
-    if (counter % 30 == 0) {
-        if (pointer < 134) {
+    if (playing) {
+        current_time = millis() - millis_start;
+        if (playing && ((current_time) >= sample.duration() * 1000))
+            stop_sample();
+        if (current_time >= verdicts[pointer].in)
+            verdicts[pointer].display(int(width/8),int(height/2));
+        // lookahead
+        // do this before or after display?
+        // or could use verdict.spoken or verdict.speaking property
+        if (current_time >= verdicts[(pointer + 1) % verdicts.length].in)
             pointer++;
-        } else {
-            pointer--;
-        }
+        println(verdicts[pointer].in + " / " + current_time);
     }
-
     counter++;
 }
 
@@ -99,6 +85,61 @@ void load_csv() {
 
         println(verdicts[i].in + ":" + verdicts[i].out + " " + verdicts[i].txt);
     }
+    println("** " + verdicts.length + " rows **");
 }
 
+/*
+
+    sound control
+
+*/
+
+Boolean play_sample() {
+    if (!playing) {
+        millis_start = millis();
+        sample.loop();      // so use .loop() instead
+        sample.amp(0.0);     
+        playing = true;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+Boolean stop_sample() {
+    playing = false;
+    // sample.stop();
+    sample.pause();
+    return true;
+}
+
+Boolean sync_sample() {
+    while (second() % 5 !=0) {
+        // wait
+    }    
+    play_sample();
+    if (playing)
+        return true;
+    else 
+        return false;
+}
+
+/*
+
+    interaction
+
+*/
+
+void keyPressed() {
+    switch(key) {
+        case ' ':
+            if (!playing)
+                play_sample();
+            else
+                stop_sample();
+            break;
+        default:
+            break;
+    }
+}
 

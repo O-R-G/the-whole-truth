@@ -12,6 +12,7 @@ class Verdict {
     int length;
     int in, out;  
     float width;
+    Boolean speaking;
     Boolean spoken;
 
 /*

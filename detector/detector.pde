@@ -1,26 +1,33 @@
-/**
- * detector
- *
- * random walk through array of terms which correlate
- * to values in a lie detector software
- *
- * uses processing.sound for playback
- * uses processing.sound for Amplitude
- * uses Speech-to-text-normal
- *
- * O-R-G
- * for Lawrence Abu Hamdan, The Whole Truth
- */
+/*
+    detector
+
+    uses processing.sound for playback
+    uses processing.sound for Amplitude
+    uses Speech-to-text-normal
+
+    load .csv to populate Verdict objects 
+    marked in m, s, frames, verdict
+    display verdicts at time with color
+
+    O-R-G
+    for Lawrence Abu Hamdan, The Whole Truth
+*/
 
 import processing.sound.*;
 
 SoundFile sample;
 PFont mono;
-String[] terms;
+Table table;
+Verdict[] verdicts;
 
+// should be passed to Verdict
+// add sound control and timing control from kings
+// for now using raw millis()
+int current_time = 0;               // position in soundfile (millisec)
+
+// dev
 int counter;
 int pointer;
-int timer;  // how often to update in loops
 
 public void setup() {
     size(640, 360);
@@ -28,69 +35,70 @@ public void setup() {
     println("displayDensity : " + displayDensity());
     background(255);
 
-    // sample = new SoundFile(this, "the-whole-truth-90-seconds.wav");
+    load_csv();
+
     sample = new SoundFile(this, "the-whole-truth.wav");
+    // add sound control and timing control from kings
     while (second() % 5 !=0) {
         // wait so that all three apps start audio at same time 
-    }
+    }    
     sample.play();
-    sample.amp(0.0);     // force fake sync for now
+    // sample.amp(0.0);     // force fake sync for now
 
-    terms = new String[7];
-    terms[0] = "Inaccuracy";
-    terms[1] = "LIE";
-    terms[2] = "Voice Manipulation / Avoidance / Emphasizing";
-    terms[3] = "High Excitement";
-    terms[4] = "Uncertainty";
-    terms[5] = "Outsmart";
-    terms[6] = "TRUE";
-    printArray(terms);
-
-    mono = createFont("fonts/Speech-to-text-normal.ttf", 16);
+    mono = createFont("fonts/Speech-to-text-normal.ttf", 48);
     textFont(mono);
 
+    // dev
     counter = 0;
     pointer = 0;
-    timer = 60;
 }
 
 public void draw() {
-    background(0);
-    if (counter % timer == 0) {
-        pointer = random_walk(pointer);
+    background(192);
+
+/*
+    current_time=millis();      // this is lazy, see kings.pde
+
+    if (verdicts[pointer].spoken()) {
+        verdicts[pointer].display(int(width/8),int(height/2));
     }
-    draw_terms(pointer);
-    show_current_pointer();
+*/
+
+    verdicts[pointer].display(int(width/8),int(height/2));
+    if (counter % 30 == 0) {
+        if (pointer < 134) {
+            pointer++;
+        } else {
+            pointer--;
+        }
+    }
+
     counter++;
 }
 
-public void draw_terms(int currentterm) {
-    int margin_left = 50;
-    int margin_bottom = 20;
-    int margin_top = 20;
+void load_csv() {
+    // load .csv to populate verdicts
+    // table is a specific data struct with rows and columns
+    // "header" indicates the file has header row. The size of the array 
+    // is then determined by the number of rows in the table. 
 
-    for (int i = 0; i < terms.length; i++){
-        if (i == currentterm) {
-            fill(255);
-        } else {
-            fill(255, 50);
-        }
-        text(terms[i], margin_left, (height-margin_top-margin_bottom)/terms.length * (i+1));
+    table = loadTable("verdicts.csv", "header");
+    verdicts = new Verdict[table.getRowCount()];
+
+    for (int i = 0; i < table.getRowCount(); i++) {
+        TableRow row = table.getRow(i);    
+        int m = row.getInt("m");
+        int s = row.getInt("s");
+        int frame = row.getInt("frame");
+        int in = int((m * 60 + s + frame/30) * 1000);
+        int out = in + 1000;
+        // int in = 100;
+        // int out = 100*10;
+        String txt = row.getString("VERDICT");
+        verdicts[i] = new Verdict(in,out,txt);
+
+        println(verdicts[i].in + ":" + verdicts[i].out + " " + verdicts[i].txt);
     }
 }
 
-private int random_walk(int pointer_old) {
-    int increment = int(random(-2,2));
-    int pointer_new = (pointer_old + increment) % terms.length;
-    if (pointer_new < 0) 
-        pointer_new = 0;
-    println(pointer_new);
-    return pointer_new;
-}
-
-private void show_current_pointer() {
-    String point = nf(pointer, 4);
-    fill(255);
-    text(pointer,width-100,24);
-}
 

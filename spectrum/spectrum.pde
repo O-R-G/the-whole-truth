@@ -37,7 +37,8 @@ int scale = 5;
 float barWidth;
 
 public void setup() {
-    size(640, 360);
+    // size(640, 360);
+    size(360, 640);
     background(255);
 
     barWidth = width/float(bands);

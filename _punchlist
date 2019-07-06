@@ -1,16 +1,18 @@
 ** waveform **
-- read from verdicts.csv
+- read from verdicts.csv    
+- implement timing coord
 
 ** detector **
-- read from verdicts.csv
-- Verdict class based on Word from kings
-- includes static colors lookup dictionary
-// add sound control and timing control from kings
-
++ read from verdicts.csv
+/ Verdict class based on Word from kings
+/ include static colors lookup dictionary
+- add sound control and timing control from kings
+- implement timing coord
 
 ** spectrum **
 - read from verdicts.csv
 - produce snapshots at moments in time
-- vertical oriientation
++ vertical orientation
 - display snapshots full, vertical
 - maybe with flash screen when snapshot
+- implement timing coord

@@ -30,7 +30,6 @@ int counter;
 public void setup() {
     size(640, 360);
     pixelDensity(displayDensity());
-    println("displayDensity : " + displayDensity());
     background(0);
     load_csv();
     mono = createFont("fonts/Speech-to-text-normal.ttf", 48);
@@ -38,6 +37,8 @@ public void setup() {
     sample = new SoundFile(this, "the-whole-truth.wav");
     counter = 0;
     pointer = 0;
+    println("displayDensity : " + displayDensity());
+    println("** ready **");
 }
 
 public void draw() {
@@ -82,7 +83,7 @@ void load_csv() {
 
         println(verdicts[i].in + ":" + verdicts[i].out + " " + verdicts[i].txt);
     }
-    println("** " + verdicts.length + " rows **");
+    println(verdicts.length + " rows");
 }
 
 /*

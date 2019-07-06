@@ -32,13 +32,10 @@ public void setup() {
     pixelDensity(displayDensity());
     println("displayDensity : " + displayDensity());
     background(0);
-
     load_csv();
     mono = createFont("fonts/Speech-to-text-normal.ttf", 48);
     textFont(mono);
-
     sample = new SoundFile(this, "the-whole-truth.wav");
-
     counter = 0;
     pointer = 0;
 }

@@ -31,7 +31,7 @@ public void setup() {
     size(640, 360);
     pixelDensity(displayDensity());
     println("displayDensity : " + displayDensity());
-    background(255);
+    background(0);
 
     load_csv();
     mono = createFont("fonts/Speech-to-text-normal.ttf", 48);

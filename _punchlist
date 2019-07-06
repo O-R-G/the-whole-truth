@@ -4,17 +4,23 @@
 
 ** detector **
 + read from verdicts.csv
-/ Verdict class based on Word from kings
++ Verdict class based on Word from kings
++ add sound control and timing control from kings
 / include static colors lookup dictionary
-- add sound control and timing control from kings
-- implement timing coord
-- compare println of read_csv to file, last row choppedo
+- compare println of read_csv to file, last row chopped
 - int rounding errors when setting frames (frame/30)
+- or use processing.sound to get current position?
 
 ** spectrum **
 - read from verdicts.csv
-- produce snapshots at moments in time
+- snapshots at moments in time
 + vertical orientation
 - display snapshots full, vertical
 - maybe with flash screen when snapshot
 - implement timing coord
+
+** _cmd **
+- mouse or keyboard events pass through between java apps?
+- or use internal computer clock or millis()
+- how to best sync start
+- move data folder outside of sketch so only one

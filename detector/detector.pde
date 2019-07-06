@@ -76,8 +76,6 @@ void load_csv() {
         int frame = row.getInt("frame");
         int in = int((m * 60 + s + frame/30) * 1000);
         int out = in + 1000;
-        // int in = 100;
-        // int out = 100*10;
         String txt = row.getString("VERDICT");
         verdicts[i] = new Verdict(in,out,txt);
 

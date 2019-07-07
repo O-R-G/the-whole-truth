@@ -8,25 +8,14 @@
 
 class Verdict {
 
-    String txt;
+    int in, out;
     int length;
-    int in, out;  
     float width;
-    Boolean speaking;
-    Boolean spoken;
-
-/*
-    StringDict colors = new StringDict();
-    colors.set("TRUTH", "240,240,240");            
-    colors.set("SUBJECT EMPHATIC", "255,0,0");
-    colors.set("SUBJECT MANIPULATING VOICE", "255,100,20");
-    colors.set("AVOIDANCE", "0,180,200");
-    colors.set("ATTEMPTING OUTSMART", "150,50,200");
-    colors.set("SUBJECT IS NOT SURE", "50,150,0");
-    colors.set("INACCURACY", "230,80,100");
-    colors.set("LIE", "0,0,0");
-    String color;
-*/
+    String txt;
+    // Boolean speaking;
+    // Boolean spoken;
+    StringDict colors;
+    // int[] color_;
 
     Verdict(int in_, int out_, String txt_) {
         in = in_;
@@ -34,7 +23,8 @@ class Verdict {
         txt = txt_;
         width = textWidth(this.txt);
         length = txt.length();
-        spoken = false;
+        set_colors();
+        // spoken = false;
     }
 
     Boolean speaking() {
@@ -53,18 +43,29 @@ class Verdict {
             return false;
     }
 
-    // String color(StringDict colors) {
-    // String color(String txt) {
+    Boolean set_colors() {
+        colors = new StringDict();
+        colors.set("TRUTH", "240,240,240");
+        colors.set("SUBJECT EMPHATIC", "255,0,0");
+        colors.set("SUBJECT MANIPULATING VOICE", "255,100,20");
+        colors.set("AVOIDANCE", "0,180,200");
+        colors.set("ATTEMPTING OUTSMART", "150,50,200");
+        colors.set("SUBJECT IS NOT SURE", "50,150,0");
+        colors.set("INACCURACY", "230,80,100");
+        colors.set("LIE", "0,0,0");
+        return true;
+    }
+
     /*
-    String color() {
-        String rgb_str = colors.get(txt);
-        int[] rgb = split(rgb_str,",");
+    int[] color_() {
+        String rgb_str_ = colors.get(txt);
+        int[] rgb = int(split(rgb_str_,","));
         return rgb;
     }
     */
 
     void display(int _x, int _y) {
-        // int rgb = this.color();
+        // int[] rgb = color_();
         // fill(rgb[0],rgb[1],rgb[2]);
         // fill(100,100,100);
         // rect(0,0,height,width);

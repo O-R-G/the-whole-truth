@@ -56,19 +56,16 @@ class Verdict {
         return true;
     }
 
-    /*
     int[] color_() {
         String rgb_str_ = colors.get(txt);
         int[] rgb = int(split(rgb_str_,","));
         return rgb;
     }
-    */
 
     void display(int _x, int _y) {
-        // int[] rgb = color_();
-        // fill(rgb[0],rgb[1],rgb[2]);
-        // fill(100,100,100);
-        // rect(0,0,height,width);
+        int[] rgb = color_();
+        fill(rgb[0],rgb[1],rgb[2]);
+        rect(0,0,360,640);
         fill(0);
         text(txt,_x,_y);
     }

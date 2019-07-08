@@ -105,13 +105,13 @@ Boolean set_colors() {
     // for matching rows in .csv based on verdict txt
 
     colors = new StringDict();
-    colors.set("TRUTH", "240,240,240");
-    colors.set("SUBJECT EMPHATIC", "255,0,0");
-    colors.set("SUBJECT MANIPULATING VOICE", "255,100,20");
-    colors.set("AVOIDANCE", "0,180,200");
+    colors.set("TRUTH", "255,255,255");
+    colors.set("SUBJECT EMPHATIC", "247,203,202");
+    colors.set("SUBJECT MANIPULATING VOICE", "235,85,248");
+    colors.set("AVOIDANCE", "140,140,140");
     colors.set("SUBJECT ATTEMPTING OUTSMART", "150,50,200");
-    colors.set("SUBJECT IS NOT SURE", "50,150,0");
-    colors.set("INACCURACY", "230,80,100");
+    colors.set("SUBJECT IS NOT SURE", "255,253,205");
+    colors.set("INACCURACY", "140,136,39");
     colors.set("LIE", "0,0,0");
     return true;
 }
@@ -126,6 +126,7 @@ Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
         sample.loop();      // so use .loop() instead
+        sample.amp(1.0);
         playing = true;
         return true;
     } else {

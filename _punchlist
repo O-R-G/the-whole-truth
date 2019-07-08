@@ -7,6 +7,8 @@
 + compare println of read_csv to file, last row chopped
 + int rounding errors when setting frames (frame/30)
 + multiline txt wrap
+- alternate type? helv, arial, menlo
+- adjust colors
 
 ** waveform **
 x read from verdicts.csv    
@@ -21,6 +23,8 @@ x read from verdicts.csv
 + snapshots at moments in time
 / display snapshots full, vertical
 - flash screen when snapshot
+- add current time in min, sec, frames and snapshot time
+  maybe in green? or red? led 7-segment?
 
 ** _cmd **
 x mouse or keyboard events pass through between java apps?

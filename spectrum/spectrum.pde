@@ -1,18 +1,18 @@
-/**
- * spectrum
- *
- * analyzes a stream of sound using a Fast Fourier Transform
- * to unpack constituent frequencies displayed as amplitudes
- * changing over time. number of FFT bands can be adjusted 
- * for finer/coarser resolution.
- *
- * based on FFTSpectrum example in processing.sound        
- * uses processing.sound for FFT analysis
- * uses Speech-to-text-normal        
- *
- * O-R-G
- * for Lawrence Abu Hamdan, The Whole Truth
- */
+/*
+    spectrum
+
+    analyzes a stream of sound using a Fast Fourier Transform
+    to unpack constituent frequencies displayed as amplitudes
+    changing over time. number of FFT bands can be adjusted 
+    for finer/coarser resolution.
+
+    based on FFTSpectrum example in processing.sound        
+    uses processing.sound for FFT analysis
+    uses Speech-to-text-normal        
+
+    O-R-G
+    for Lawrence Abu Hamdan, The Whole Truth
+*/
 
 import processing.sound.*;
 
@@ -40,6 +40,10 @@ public void setup() {
     // size(640, 360);
     size(360, 640);
     background(255);
+
+    Sound.list();                   // sound output devices to stdout
+    Sound s = new Sound(this);      // need sound object to set device
+    s.outputDevice(2);              // set to built-in output
 
     barWidth = width/float(bands);
 

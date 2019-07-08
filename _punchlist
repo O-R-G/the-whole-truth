@@ -19,8 +19,10 @@
 - display snapshots full, vertical
 - maybe with flash screen when snapshot
 - implement timing coord
+- colors shift blue to red vertical w/intensity
+- crop freq distribution to most meaningful
 
 ** _cmd **
 x mouse or keyboard events pass through between java apps?
 + or use internal computer clock or millis()
-+ move data folder outside of sketch?
++ move data folder outside of sketch

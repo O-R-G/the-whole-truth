@@ -16,10 +16,10 @@
 import processing.sound.*;
 
 SoundFile sample;
-Verdict[] verdicts;
 PFont mono;
 Table table;
 StringDict colors;
+Verdict[] verdicts;
 
 int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
@@ -27,6 +27,7 @@ int pointer;                // current index in verdicts[]
 int counter;                // draw loop
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
+int display_scale = 2;
 
 public void setup() {
     // size(640, 360);
@@ -44,7 +45,7 @@ public void setup() {
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
     sync_sample();
 
-    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48);
+    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48 * display_scale);
     textFont(mono);
     textAlign(CENTER, CENTER);
 
@@ -68,12 +69,13 @@ public void draw() {
     counter++;
 }
 
-void load_csv() {
-    // load .csv to populate verdicts
-    // table is a specific data struct with rows and columns
-    // "header" indicates the file has header row. The size of the array 
-    // is then determined by the number of rows in the table. 
+/*
 
+    objects from .csv data
+
+*/
+
+void load_csv() {
     table = loadTable(data_path + "verdicts.csv", "header");
     verdicts = new Verdict[table.getRowCount()];
 
@@ -139,8 +141,9 @@ Boolean stop_sample() {
 }
 
 Boolean sync_sample() {
-    while (second() % 5 !=0) 
-        println(second() % 5);
+    while (second() % 10 !=0) {
+        println(second() % 10);
+    }
     play_sample();        
     sample.amp(0.0);
     if (playing)

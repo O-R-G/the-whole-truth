@@ -13,14 +13,14 @@ x read from verdicts.csv
 + implement timing coord
 
 ** spectrum **
-- implement timing coord
-- read from verdicts.csv
-- snapshots at moments in time
++ implement timing coord
++ read from verdicts.csv
 + vertical orientation
-- display snapshots full, vertical
-- maybe with flash screen when snapshot
-- colors gradient blue to red vertical 
-- crop freq distribution to most meaningful
++ crop freq distribution to most meaningful
+/ gradient blue to red vertical, use lerpColor
++ snapshots at moments in time
+/ display snapshots full, vertical
+- flash screen when snapshot
 
 ** _cmd **
 x mouse or keyboard events pass through between java apps?

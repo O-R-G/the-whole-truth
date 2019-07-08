@@ -98,8 +98,9 @@ Boolean stop_sample() {
 }
 
 Boolean sync_sample() {
-    while (second() % 5 !=0)  
-        println(second() % 5);
+    while (second() % 10 !=0) {  
+        println(second() % 10);
+    }
     play_sample();
     // sample.amp(0.0);
     if (playing)

@@ -19,10 +19,12 @@ SoundFile sample;
 PFont mono;
 Table table;
 Verdict[] verdicts;
+StringDict colors;
 
 int millis_start = 0;
 int current_time = 0;               // position in soundfile (millis)
 Boolean playing = false;
+String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 
 int pointer;    // current index in verdicts
 int counter;    
@@ -31,12 +33,20 @@ public void setup() {
     size(640, 360);
     pixelDensity(displayDensity());
     background(0);
+    noStroke();
+
+    set_colors();
     load_csv();
-    mono = createFont("fonts/Speech-to-text-normal.ttf", 48);
+    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48);
     textFont(mono);
-    sample = new SoundFile(this, "the-whole-truth.wav");
+    textAlign(CENTER);
+    sample = new SoundFile(this, data_path + "the-whole-truth.wav");
+
+    sync_sample();
+
     counter = 0;
     pointer = 0;
+
     println("displayDensity : " + displayDensity());
     println("** ready **");
 }
@@ -49,7 +59,7 @@ public void draw() {
         if (playing && ((current_time) >= sample.duration() * 1000))
             stop_sample();
         if (current_time >= verdicts[pointer].in)
-            verdicts[pointer].display(int(width/8),int(height/2));
+            verdicts[pointer].display(int(width/2),int(height/2));
         // lookahead
         // do this before or after display?
         // or could use verdict.spoken or verdict.speaking property
@@ -66,7 +76,7 @@ void load_csv() {
     // "header" indicates the file has header row. The size of the array 
     // is then determined by the number of rows in the table. 
 
-    table = loadTable("verdicts.csv", "header");
+    table = loadTable(data_path + "verdicts.csv", "header");
     verdicts = new Verdict[table.getRowCount()];
 
     for (int i = 0; i < table.getRowCount(); i++) {
@@ -77,11 +87,33 @@ void load_csv() {
         int in = int((m * 60 + s + frame/30) * 1000);
         int out = in + 1000;
         String txt = row.getString("VERDICT");
-        verdicts[i] = new Verdict(in,out,txt);
+        String c_str = colors.get(txt);
+        int[] c_ = int(split(c_str,","));
+        color c = color(c_[0], c_[1], c_[2]);
+        if (c_str == null) {
+            println(txt + ", " + c_str);
+            c = color(192,192,192);
+        }
+        verdicts[i] = new Verdict(in,out,txt,c);
 
         println(verdicts[i].in + ":" + verdicts[i].out + " " + verdicts[i].txt);
     }
     println(verdicts.length + " rows");
+}
+
+Boolean set_colors() {
+    // for matching rows in .csv based on verdict txt
+
+    colors = new StringDict();
+    colors.set("TRUTH", "240,240,240");
+    colors.set("SUBJECT EMPHATIC", "255,0,0");
+    colors.set("SUBJECT MANIPULATING VOICE", "255,100,20");
+    colors.set("AVOIDANCE", "0,180,200");
+    colors.set("SUBJECT ATTEMPTING OUTSMART", "150,50,200");
+    colors.set("SUBJECT IS NOT SURE", "50,150,0");
+    colors.set("INACCURACY", "230,80,100");
+    colors.set("LIE", "0,0,0");
+    return true;
 }
 
 /*
@@ -94,7 +126,6 @@ Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
         sample.loop();      // so use .loop() instead
-        sample.amp(0.0);     
         playing = true;
         return true;
     } else {
@@ -112,8 +143,13 @@ Boolean stop_sample() {
 Boolean sync_sample() {
     while (second() % 5 !=0) {
         // wait
-    }    
-    play_sample();
+        println(second() % 5);
+    }
+    if (!playing) {
+        play_sample();
+        sample.amp(0.0);
+        playing = true;
+    }
     if (playing)
         return true;
     else 

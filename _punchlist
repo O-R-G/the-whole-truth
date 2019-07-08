@@ -1,15 +1,15 @@
-** waveform **
-- read from verdicts.csv    
-- implement timing coord
-
 ** detector **
 + read from verdicts.csv
 + Verdict class based on Word from kings
 + add sound control and timing control from kings
-/ include static colors lookup dictionary
++ include static colors lookup dictionary
 - compare println of read_csv to file, last row chopped
 - int rounding errors when setting frames (frame/30)
-- or use processing.sound to get current position?
+- correct colors
+
+** waveform **
+- read from verdicts.csv    
+- implement timing coord
 
 ** spectrum **
 - read from verdicts.csv
@@ -20,7 +20,6 @@
 - implement timing coord
 
 ** _cmd **
-- mouse or keyboard events pass through between java apps?
-- or use internal computer clock or millis()
-- how to best sync start
-- move data folder outside of sketch so only one
+x mouse or keyboard events pass through between java apps?
++ or use internal computer clock or millis()
++ move data folder outside of sketch?

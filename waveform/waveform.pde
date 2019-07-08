@@ -20,24 +20,26 @@ SoundFile sample;
 Waveform waveform;
 PFont mono;
 
-// Define how many samples of the Waveform to read at once
-int samples = 100;
+int millis_start = 0;       // when audio starts playing (millis)
+int current_time = 0;       // position in soundfile (millis)
+int pointer;                // current index in verdicts[]
+int counter;                // draw loop
+int samples = 100;          // samples of waveform to read at once
+Boolean playing = false;
+String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 
 public void setup() {
-    size(640, 360);
+    // size(640, 360);
+    size(1280, 720);
+    // size(1920, 1080);
     background(255);
 
-    // sample = new SoundFile(this, "the-whole-truth-90-seconds.wav");
-    sample = new SoundFile(this, "the-whole-truth.wav");
-    while (second() % 5 !=0) {
-        // wait so that all three apps start audio at same time 
-    }
-    sample.play();
-
+    sample = new SoundFile(this, data_path + "the-whole-truth.wav");
+    sync_sample();
     waveform = new Waveform(this, samples);
     waveform.input(sample);
 
-    mono = createFont("fonts/Speech-to-text-normal.ttf", 16);
+    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
 }
 
@@ -71,3 +73,37 @@ private void show_current_time() {
     text(min + ":" + sec,width-100,24);
 }
 
+/*
+
+    sound control
+
+*/
+
+Boolean play_sample() {
+    if (!playing) {
+        millis_start = millis();
+        sample.loop();      
+        sample.amp(1.0);
+        playing = true;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+Boolean stop_sample() {
+    playing = false;
+    sample.stop();
+    return true;
+}
+
+Boolean sync_sample() {
+    while (second() % 5 !=0)  
+        println(second() % 5);
+    play_sample();
+    // sample.amp(0.0);
+    if (playing)
+        return true;
+    else
+        return false;
+}

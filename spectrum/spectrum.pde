@@ -38,7 +38,8 @@ float barWidth;
 
 public void setup() {
     // size(640, 360);
-    size(360, 640);
+    size(1280, 720);
+    // size(1920, 1080);
     background(255);
 
     Sound.list();                   // sound output devices to stdout

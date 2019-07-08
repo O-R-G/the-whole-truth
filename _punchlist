@@ -9,17 +9,17 @@
 + multiline txt wrap
 
 ** waveform **
-- read from verdicts.csv    
-- implement timing coord
+x read from verdicts.csv    
++ implement timing coord
 
 ** spectrum **
+- implement timing coord
 - read from verdicts.csv
 - snapshots at moments in time
 + vertical orientation
 - display snapshots full, vertical
 - maybe with flash screen when snapshot
-- implement timing coord
-- colors shift blue to red vertical w/intensity
+- colors gradient blue to red vertical 
 - crop freq distribution to most meaningful
 
 ** _cmd **

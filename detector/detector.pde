@@ -16,35 +16,37 @@
 import processing.sound.*;
 
 SoundFile sample;
+Verdict[] verdicts;
 PFont mono;
 Table table;
-Verdict[] verdicts;
 StringDict colors;
 
-int millis_start = 0;
-int current_time = 0;               // position in soundfile (millis)
+int millis_start = 0;       // when audio starts playing (millis)
+int current_time = 0;       // position in soundfile (millis)
+int pointer;                // current index in verdicts[]
+int counter;                // draw loop
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 
-int pointer;    // current index in verdicts
-int counter;    
-
 public void setup() {
-    size(640, 360);
+    // size(640, 360);
+    size(1280, 720);
+    // size(1920, 1080);
     pixelDensity(displayDensity());
     background(0);
     noStroke();
-    
+
     set_colors();
     load_csv();
-    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48);
-    textFont(mono);
-    textAlign(CENTER, CENTER);
+    counter = 0;
+    pointer = 0;
+
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
     sync_sample();
 
-    counter = 0;
-    pointer = 0;
+    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48);
+    textFont(mono);
+    textAlign(CENTER, CENTER);
 
     println("displayDensity : " + displayDensity());
     println("** ready **");
@@ -59,7 +61,6 @@ public void draw() {
             stop_sample();
         if (current_time >= verdicts[pointer].in)
             verdicts[pointer].display(int(width/2),int(height/2));
-        // lookahead, could also implement verdict.out
         if (current_time >= verdicts[(pointer + 1) % verdicts.length].in)
             pointer++;
         println(verdicts[pointer].in + " / " + current_time);
@@ -100,8 +101,7 @@ void load_csv() {
 }
 
 Boolean set_colors() {
-    // for matching rows in .csv based on verdict txt
-
+    // match .csv rows based on verdict txt
     colors = new StringDict();
     colors.set("TRUTH", "255,255,255");
     colors.set("SUBJECT EMPHATIC", "247,203,202");
@@ -123,7 +123,7 @@ Boolean set_colors() {
 Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
-        sample.loop();      // so use .loop() instead
+        sample.loop();      
         sample.amp(1.0);
         playing = true;
         return true;
@@ -134,21 +134,15 @@ Boolean play_sample() {
 
 Boolean stop_sample() {
     playing = false;
-    // sample.stop();
-    sample.pause();
+    sample.stop();
     return true;
 }
 
 Boolean sync_sample() {
-    while (second() % 5 !=0) {
-        // wait
+    while (second() % 5 !=0) 
         println(second() % 5);
-    }
-    if (!playing) {
-        play_sample();
-        sample.amp(0.0);
-        playing = true;
-    }
+    play_sample();        
+    sample.amp(0.0);
     if (playing)
         return true;
     else 

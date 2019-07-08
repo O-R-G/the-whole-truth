@@ -4,8 +4,9 @@
 + add sound control and timing control from kings
 + include static colors lookup dictionary
 + correct colors
-- compare println of read_csv to file, last row chopped
-- int rounding errors when setting frames (frame/30)
++ compare println of read_csv to file, last row chopped
++ int rounding errors when setting frames (frame/30)
+- multiline txt wrap
 
 ** waveform **
 - read from verdicts.csv    

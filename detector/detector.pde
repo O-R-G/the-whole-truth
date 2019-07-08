@@ -41,7 +41,6 @@ public void setup() {
     textFont(mono);
     textAlign(CENTER);
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
-
     sync_sample();
 
     counter = 0;
@@ -60,9 +59,7 @@ public void draw() {
             stop_sample();
         if (current_time >= verdicts[pointer].in)
             verdicts[pointer].display(int(width/2),int(height/2));
-        // lookahead
-        // do this before or after display?
-        // or could use verdict.spoken or verdict.speaking property
+        // lookahead, could also implement verdict.out
         if (current_time >= verdicts[(pointer + 1) % verdicts.length].in)
             pointer++;
         println(verdicts[pointer].in + " / " + current_time);
@@ -84,7 +81,8 @@ void load_csv() {
         int m = row.getInt("m");
         int s = row.getInt("s");
         int frame = row.getInt("frame");
-        int in = int((m * 60 + s + frame/30) * 1000);
+        float f = float(frame)/30;
+        int in = round((m * 60 + s + f) * 1000);
         int out = in + 1000;
         String txt = row.getString("VERDICT");
         String c_str = colors.get(txt);

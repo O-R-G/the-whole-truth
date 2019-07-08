@@ -39,7 +39,7 @@ public void setup() {
     load_csv();
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48);
     textFont(mono);
-    textAlign(CENTER);
+    textAlign(CENTER, CENTER);
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
     sync_sample();
 

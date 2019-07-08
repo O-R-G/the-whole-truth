@@ -50,6 +50,7 @@ class Verdict {
             fill(255);
         else
             fill(0);
-        text(txt,_x,_y);
+        // text(txt,_x,_y,width/2,height/2);
+        text(txt,20,0,width-40,height-40);
     }
 }

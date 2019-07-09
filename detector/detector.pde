@@ -25,13 +25,13 @@ int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
+int display_scale = 1;
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-int display_scale = 2;
 
 public void setup() {
-    // size(640, 360);
-    size(1280, 720);
+    size(640, 360);
+    // size(1280, 720);
     // size(1920, 1080);
     pixelDensity(displayDensity());
     background(0);

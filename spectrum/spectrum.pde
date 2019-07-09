@@ -27,19 +27,20 @@ int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
+int display_scale = 1;
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 
 int samples = 100;          // samples of waveform to read at once
 int bands = 128;            // FFT bands to use (must be a power of two)
-int scale = 15;             // [5]
+int scale = 5;              // [5]
 float smoothingFactor = 0.2;
 float[] sum = new float[bands]; // smoothed spectrum data
 float barWidth;
 
 public void setup() {
-    // size(360, 640);
-    size(720, 1280);
+    size(360, 640);
+    // size(720, 1280);
     // size(1080, 1920);
     background(0);
     noStroke();
@@ -77,21 +78,27 @@ public void draw() {
             fft.analyze();
             for (int i = 0; i < bands; i++) {
                 // adjust color between r and b
-                fill(i*2,0,((bands-i)*2)-1);
+                // fill(i*2,0,((bands-i)*2)-1);
 
-                // gradient(0,0,100,height,color(255,0,0),color(0,0,255));
-    
                 // Smooth the FFT spectrum data by smoothing factor
                 sum[i] += (fft.spectrum[i] - sum[i]) * smoothingFactor;
 
                 // Draw the rectangles, adjust their height using the scale factor
                 rect(i*barWidth, height, barWidth, -sum[i]*height*scale);
+
+                // gradient(int(i*barWidth), int(height), barWidth, -sum[i]*height*scale,color(255,0,0),color(0,0,255));
+                // gradient(int(i*barWidth), int(height), barWidth * 1.5, 100.0, color(255,0,0), color(0,0,255));
             }
+int i = 2;
+println(barWidth);
+println(sum[i]*height);
+            gradient(i*barWidth, 0, height/2, sum[i]*height*scale, color(255,0,0), color(0,0,255));
+            // gradient(0,0,width/32, height, color(255,0,0),color(0,0,255));                
             pointer++;
         }
     }
 
-    // show_current_millis();
+    show_current_millis();
 }
 
 private void show_current_millis() {

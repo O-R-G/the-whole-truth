@@ -35,7 +35,8 @@ public void setup() {
     // size(1920, 1080);
     background(255);
 
-    sample = new SoundFile(this, data_path + "the-whole-truth.wav");
+    // sample = new SoundFile(this, data_path + "the-whole-truth.wav");
+    sample = new SoundFile(this, data_path + "hushedness.wav");
     sync_sample();
     waveform = new Waveform(this, samples);
     waveform.input(sample);

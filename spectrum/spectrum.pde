@@ -95,8 +95,8 @@ public void draw() {
                 // using rectMode(CORNERS) instead of default rectMode(CORNER)
                 // specify 4 corners (x1,y1,x2,y2) not (x,y,w,h)
                 // rect(i*barWidth*crop, height, i*barWidth*crop+barWidth, height-sum[i]*height*scale);
-                // gradient(int(i*barWidth*crop), int(height), int(i*barWidth*crop+barWidth), int(height-sum[i]*height*scale),color(0,255,255),color(255,255,255));
-                gradient(int(i*barWidth*crop), int(height), int(i*barWidth*crop+barWidth), int(height-sum[i]*height*scale),0,255);
+                // gradient(int(i*barWidth*crop), int(height), int(i*barWidth*crop+barWidth), int(height-sum[i]*height*scale),0,255);
+                gradient(int(i*barWidth*crop), int(height), int(i*barWidth*crop+barWidth), int(height-sum[i]*height*scale),212,42);
             }
             fill(0,0,0);
             noStroke();

@@ -35,7 +35,9 @@ int samples = 100;          // samples of waveform to read at once
 // int bands = 128;         // FFT bands to use (must be a power of 2)
 int bands = 256;            // FFT bands to use (must be a power of 2)
 int crop = 4;               // horizontal crop of frequencies (must be a power of 2)
-int scale = 5;              // [5]
+int scale = 20;              // [5]
+int capture_delay = 300;    // delay before captures FFT so gets a broader spectrum
+                            // would be better to average over a longer time
 float smoothingFactor = 0.2;
 float[] sum = new float[bands]; // smoothed spectrum data
 float barWidth;
@@ -47,6 +49,7 @@ public void setup() {
     background(0);
     noStroke();
     rectMode(CORNERS);              // specify 4 corners (x1,y1,x2,y2) not (x,y,w,h)
+    colorMode(HSB);
 
     /*
     Sound.list();                   // sound output devices to stdout
@@ -60,8 +63,8 @@ public void setup() {
     pointer = 0;
 
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
-    // sync_sample();
-    play_sample();
+    sync_sample();
+    // play_sample();
 
     barWidth = width/float(bands);
     // barWidth *= 4;                  // wider bars, crops frequencies display 
@@ -76,9 +79,11 @@ public void draw() {
 
     if (playing) {
         current_time = millis() - millis_start;
+        // draw_grid();
 
-        // if (current_time >= verdicts[pointer].in) {
+        if (current_time >= verdicts[pointer].in + capture_delay) {
             background(0);
+
             fft.analyze();
             for (int i = 0; i < bands / crop; i++) {
                 // adjust color between r & b
@@ -90,17 +95,47 @@ public void draw() {
                 // using rectMode(CORNERS) instead of default rectMode(CORNER)
                 // specify 4 corners (x1,y1,x2,y2) not (x,y,w,h)
                 // rect(i*barWidth*crop, height, i*barWidth*crop+barWidth, height-sum[i]*height*scale);
-                gradient(int(i*barWidth*crop), int(height), int(i*barWidth*crop+barWidth), int(height-sum[i]*height*scale),color(0,0,255),color(0,0,255));
+                // gradient(int(i*barWidth*crop), int(height), int(i*barWidth*crop+barWidth), int(height-sum[i]*height*scale),color(0,255,255),color(255,255,255));
+                gradient(int(i*barWidth*crop), int(height), int(i*barWidth*crop+barWidth), int(height-sum[i]*height*scale),0,255);
             }
+            fill(0,0,0);
+            noStroke();
+            rect(width-100, 36, width, 30);
+            show_capture_time(width-70, 44);
             pointer++;
-        // }
+        }
     }
-    show_current_millis();
+
+    // update current_time display
+    fill(0,0,0);
+    noStroke();
+    rect(width-100, 0, width, 30);
+    show_current_time(width-70, 24);
 }
 
 private void show_current_millis() {
     fill(255);
     text(millis(),width-100,24);
+}
+
+private void show_current_time(int x, int y) {
+    int seconds_total = millis() / 1000;
+    int minutes = floor(seconds_total / 60);
+    int seconds = seconds_total % 60;
+    String sec = nf(seconds, 2);
+    String min = nf(minutes, 2);
+    fill(255/3,255,255);
+    text(min + ":" + sec,x,y);
+}
+
+private void show_capture_time(int x, int y) {
+    int seconds_total = millis() / 1000;
+    int minutes = floor(seconds_total / 60);
+    int seconds = seconds_total % 60;
+    String sec = nf(seconds, 2);
+    String min = nf(minutes, 2);
+    fill(0,0,255);
+    text(min + ":" + sec,x,y);
 }
 
 /*
@@ -192,16 +227,29 @@ Boolean sync_sample() {
 
 */
 
-void gradient(int x1, int y1, int x2, int y2, color c1, color c2) {
+void gradient(int x1, int y1, int x2, int y2, int h1, int h2) {
 
     // rewritten for rectMode(CORNERS)
     // better with floats?
+    // assumes colorMode(USB)
+    // using h,s,b where only h matters
+    // so lerp between hue values
+
     noFill();
     for (int i = y1; i >= y2; i--) {
-        // float inter = map(i, y1, y2, 0, 1);
         float inter = map(i, height, 0, 0, 1);
-        color c = lerpColor(c1, c2, inter);
+        float hue = lerp(h1, h2, inter);
+        // color c = lerpColor(c1, c2, inter);
+        color c = color(hue, 255, 255);
         stroke(c);
         line(x1, i, x2, i);
+    }
+}
+
+void draw_grid() {
+    int incr = int(height/10);
+    for (int i = 0; i < height; i+=incr) {
+        stroke(0,0,50);
+        line(0, i, width, i);
     }
 }

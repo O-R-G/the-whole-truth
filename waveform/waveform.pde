@@ -25,18 +25,17 @@ int current_time = 0;       // position in soundfile (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
 int samples = 100;          // samples of waveform to read at once
-int display_scale = 1;
+int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 
 public void setup() {
-    size(640, 360);
-    // size(1280, 720);
+    // size(640, 360);
+    size(1280, 720);
     // size(1920, 1080);
     background(255);
 
-    // sample = new SoundFile(this, data_path + "the-whole-truth.wav");
-    sample = new SoundFile(this, data_path + "hushedness.wav");
+    sample = new SoundFile(this, data_path + "the-whole-truth.wav");
     sync_sample();
     waveform = new Waveform(this, samples);
     waveform.input(sample);
@@ -63,16 +62,6 @@ public void draw() {
         );
     }
     endShape();
-    show_current_time();
-}
-
-private void show_current_time() {
-    int seconds = millis() / 1000;
-    int minutes = seconds / 60;
-    String sec = nf(seconds, 2);
-    String min = nf(minutes, 2);
-    fill(255);
-    text(min + ":" + sec,width-100,24);
 }
 
 /*

@@ -9,6 +9,8 @@
 + multiline txt wrap
 - alternate type? helv, arial, menlo
 - adjust colors
+- verdict 3 seconds, flash
+- no verdict black
 
 ** waveform **
 x read from verdicts.csv    
@@ -30,3 +32,10 @@ x read from verdicts.csv
 x mouse or keyboard events pass through between java apps?
 + or use internal computer clock or millis()
 + move data folder outside of sketch
+
+** spectrogram ** 
+- red > yellow > blue
+- fade after 3 secs"
+>> merge with spectrum/ but keep both
+
+* v3 due friday

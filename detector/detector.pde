@@ -30,8 +30,8 @@ Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 
 public void setup() {
-    // size(640, 360);
-    size(1280, 720);
+    size(640, 360);
+    // size(1280, 720);
     // size(1920, 1080);
     pixelDensity(displayDensity());
     background(0);
@@ -43,7 +43,8 @@ public void setup() {
     pointer = 0;
 
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
-    sync_sample();
+    // sync_sample();
+    play_sample();
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48 * display_scale);
     textFont(mono);

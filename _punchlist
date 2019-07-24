@@ -34,8 +34,8 @@ x mouse or keyboard events pass through between java apps?
 + move data folder outside of sketch
 
 ** spectrogram ** 
-- red > yellow > blue
-- fade after 3 secs"
->> merge with spectrum/ but keep both
-
++ merge with spectrum/ but keep both
+- blue --> yellow
+- fade after 3 secs
+- integrate audio sync
 * v3 due friday

@@ -1,1 +1,2 @@
-pjava detector/. & pjava spectrum/. & pjava waveform/. &
+pjava detector/. & pjava waveform/. & pjava spectrogram/.
+

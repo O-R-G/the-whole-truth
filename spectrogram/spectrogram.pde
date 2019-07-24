@@ -40,14 +40,16 @@ int columns = 360;          // spectrogram width in pixels
 int rows = 640;             // spectrogram height in pixels
                             // also the number of bands in FFT
 float sampleRate = 48000;   // from the audio file
-int bufferSize = 1024;      // must be a power of 2
+int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;
 
 public void setup() {
     size(360, 640, FX2D);
     background(0);
     noStroke();
-    colorMode(HSB);
+    // colorMode(HSB);
+    colorMode(HSB,255);
+    // colorMode(HSB,360,255,255);
 
     sgram = new int[rows][columns];
 
@@ -91,12 +93,9 @@ public void draw() {
             pointer++;
         }
     }
-
-    noStroke();
-    fill(0,0,0);
-    rect(width-100, 0, width, 30);
-    show_current_time(width-70, 24);
     */
+
+    show_current_time(width-70, 24);
 }
 
 /*
@@ -158,7 +157,7 @@ Boolean update_spectrogram() {
         .| .|
         ||.|||..
 
-        spetrogram (amp/freq/time)
+        spectrogram (amp/freq/time)
 
         .*+-**-.
         --.+.-+.
@@ -182,17 +181,35 @@ Boolean draw_spectrogram() {
 
     for (int i = 0; i < columns-column; i++) {
         for (int j = 0; j < rows; j++) {
-            stroke(sgram[j][i+column],255,255);
+            // stroke(sgram[j][i+column],255,255);
+            stroke(rotate_hue(sgram[j][i+column],90.0),255,255);
             point(i,height-j);
         }
     }
     for (int i = 0; i < column; i++) {
         for (int j = 0; j < rows; j++) {
-            stroke(sgram[j][i],255,255);
+            // stroke(sgram[j][i],255,255);
+            stroke(rotate_hue(sgram[j][i],90.0),255,255);
             point(i+columns-column,height-j);
         }
     }
+        
     return true;
+}
+
+float rotate_hue(float hue, float degrees) {
+
+    // hue {0-255}, degrees {0-360}
+    // remap degrees, hue
+    // then subtract degrees_mapped from hue_mapped % 255
+    // (+ 255 for negative values wrapping around 0)
+    // assumes counterclockwise rotation
+
+    float hue_mapped = map(hue, 0, 255, 0, 127);
+    float degrees_mapped = map(degrees, 0, 360, 0, 255);
+    hue = (hue_mapped - degrees_mapped + 255) % 255;
+
+    return hue;
 }
 
 void draw_axis() {
@@ -215,37 +232,6 @@ void draw_grid() {
         line(0, i, width, i);
     }
 }
-
-/*
-    colors
-*/
-
-/*
-
-// convert color spectrum to blue->yellow
-// map amplitude to value 0-127 
-// then add 255/6 (aka, 60 degrees on color wheel)
-// and then % 360 to keep in range
-
-void gradient(int x1, int y1, int x2, int y2, int h1, int h2) {
-
-    // rewritten for rectMode(CORNERS)
-    // better with floats?
-    // assumes colorMode(USB)
-    // using h,s,b where only h matters
-    // so lerp between hue values
-
-    noFill();
-    for (int i = y1; i >= y2; i--) {
-        float inter = map(i, height, 0, 0, 1);
-        float hue = lerp(h1, h2, inter);
-        // color c = lerpColor(c1, c2, inter);
-        color c = color(hue, 255, 255);
-        stroke(c);
-        line(x1, i, x2, i);
-    }
-}
-*/
 
 /*
 

@@ -35,7 +35,8 @@ x mouse or keyboard events pass through between java apps?
 
 ** spectrogram ** 
 + merge with spectrum/ but keep both
-- blue --> yellow
++ rotate_hue() in process but not yet working
 - fade after 3 secs
 - integrate audio sync
+
 * v3 due friday

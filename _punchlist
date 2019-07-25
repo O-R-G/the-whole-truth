@@ -7,8 +7,8 @@
 + compare println of read_csv to file, last row chopped
 + int rounding errors when setting frames (frame/30)
 + multiline txt wrap
-- alternate type? helv, arial, menlo
-- adjust colors
+x alternate type? helv, arial, menlo
+x adjust colors
 - verdict 3 seconds, flash
 - no verdict black
 
@@ -36,8 +36,8 @@ x mouse or keyboard events pass through between java apps?
 + merge with spectrum/ but keep both
 + rotate_hue() in process but not yet working
 + integrate audio sync
-- screen black when 0 value?
-- analyze, but mute (add boolean setting?)
++ screen black in before fft values exist
++ analyze, but mute (add boolean setting?)
 - fade after 3 secs
 - flash screen when snapshot
 

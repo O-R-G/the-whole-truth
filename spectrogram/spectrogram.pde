@@ -45,6 +45,9 @@ int rows = 640;             // spectrogram height in pixels
 float sampleRate = 48000;   // from the audio file
 int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;
+int capture_delay = 300;    // delay before captures FFT so gets a broader spectrum
+                            // would be better to average over a longer time
+Boolean mute = true;        // mute sound, still perform analysis
 
 public void setup() {
     size(360, 640, FX2D);
@@ -63,8 +66,8 @@ public void setup() {
     sample = minim.loadFile(data_path + "the-whole-truth.wav", bufferSize);
     fft = new FFT(sample.bufferSize(), sampleRate);
     fft.window(FFT.HAMMING);      // tapered time window avoids 'splatter'
-    // sample.play();
-    sync_sample();
+    // sync_sample();
+    play_sample();
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
@@ -82,7 +85,6 @@ public void draw() {
     // draw_axis();
     counter++;
 
-    /*
     // snapshot
 
     if (playing) {
@@ -95,7 +97,6 @@ public void draw() {
             pointer++;
         }
     }
-    */
 
     show_current_time(width-70, 24);
 }
@@ -173,6 +174,9 @@ Boolean update_spectrogram() {
     column++;
     if (column == columns)
         column = 0;
+        
+    println("column: " + column);
+    println("counter: " + counter);
     return true;
 }
 
@@ -183,14 +187,15 @@ Boolean draw_spectrogram() {
 
     for (int i = 0; i < columns-column; i++) {
         for (int j = 0; j < rows; j++) {
-            // stroke(sgram[j][i+column],255,255);
-            stroke(rotate_hue(sgram[j][i+column],90.0),255,255);
+            if (counter == column-1)    // no information yet
+                stroke(0);
+            else
+                stroke(rotate_hue(sgram[j][i+column],90.0),255,255);
             point(i,height-j);
         }
     }
     for (int i = 0; i < column; i++) {
         for (int j = 0; j < rows; j++) {
-            // stroke(sgram[j][i],255,255);
             stroke(rotate_hue(sgram[j][i],90.0),255,255);
             point(i+columns-column,height-j);
         }
@@ -292,8 +297,8 @@ Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
         sample.play();
-        // sample.mute();
-        // sample.amp(1.0);
+        if (mute)
+            sample.mute();
         playing = true;
         return true;
     } else {
@@ -312,7 +317,6 @@ Boolean sync_sample() {
         println(second() % 10);
     }
     play_sample();
-    // sample.amp(0.0);
     if (playing)
         return true;
     else

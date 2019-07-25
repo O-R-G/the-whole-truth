@@ -28,6 +28,7 @@ int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
+Boolean mute = true;        // mute sound, still perform analysis
 
 public void setup() {
     size(640, 360);
@@ -127,7 +128,8 @@ Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
         sample.loop();      
-        sample.amp(1.0);
+        if (mute)
+            sample.amp(0.0);
         playing = true;
         return true;
     } else {
@@ -146,7 +148,6 @@ Boolean sync_sample() {
         println(second() % 10);
     }
     play_sample();        
-    sample.amp(0.0);
     if (playing)
         return true;
     else 

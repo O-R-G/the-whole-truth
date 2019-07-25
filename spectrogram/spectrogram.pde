@@ -4,11 +4,14 @@
     analyzes a stream of sound using a Fast Fourier Transform
     to unpack constituent frequencies displayed as amplitudes
     changing over time. number of FFT bands can be adjusted 
-    for finer/coarser resolution.
+    for finer/coarser resolution. the series of FFT are then
+    rotated -90 degrees around z and 90 degrees around y to make 
+    a 3-dimensional heat map of the changing FFT snapshots
+    over time, with amplitude indicated by color.
 
-    based on FFTSpectrum example in processing.sound        
-    uses processing.sound for FFT analysis
-    uses Speech-to-text-normal        
+    based on LiveSpectrogram, Dan Ellis dpwe@ee.columbia.edu 
+    uses minim sound library for playback and analysis 
+    uses Speech-to-text-normal
 
     O-R-G
     for Lawrence Abu Hamdan, The Whole Truth
@@ -47,9 +50,7 @@ public void setup() {
     size(360, 640, FX2D);
     background(0);
     noStroke();
-    // colorMode(HSB);
-    colorMode(HSB,255);
-    // colorMode(HSB,360,255,255);
+    colorMode(HSB);
 
     sgram = new int[rows][columns];
 
@@ -62,7 +63,8 @@ public void setup() {
     sample = minim.loadFile(data_path + "the-whole-truth.wav", bufferSize);
     fft = new FFT(sample.bufferSize(), sampleRate);
     fft.window(FFT.HAMMING);      // tapered time window avoids 'splatter'
-    sample.play();
+    // sample.play();
+    sync_sample();
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
@@ -286,12 +288,12 @@ Boolean set_colors() {
 
 */
 
-/*
 Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
-        sample.loop();
-        sample.amp(1.0);
+        sample.play();
+        // sample.mute();
+        // sample.amp(1.0);
         playing = true;
         return true;
     } else {
@@ -299,9 +301,9 @@ Boolean play_sample() {
     }
 }
 
-Boolean stop_sample() {
+Boolean pause_sample() {
     playing = false;
-    sample.stop();
+    sample.pause();
     return true;
 }
 
@@ -316,7 +318,6 @@ Boolean sync_sample() {
     else
         return false;
 }
-*/
 
 void exit() {
     stop();
@@ -328,4 +329,3 @@ void stop() {
     minim.stop();
     super.stop();
 }
-

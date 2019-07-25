@@ -23,9 +23,8 @@ x read from verdicts.csv
 + crop freq distribution to most meaningful
 + snapshots at moments in time
 + display snapshots full, vertical
-/ gradient blue to red vertical, use lerpColor
-- flash screen when snapshot
-- add current time in min, sec, frames and snapshot time
++ gradient blue to red vertical, use lerpColor
++ add current time in min, sec, frames and snapshot time
   maybe in green? or red? led 7-segment?
 
 ** _cmd **
@@ -36,7 +35,10 @@ x mouse or keyboard events pass through between java apps?
 ** spectrogram ** 
 + merge with spectrum/ but keep both
 + rotate_hue() in process but not yet working
++ integrate audio sync
+- screen black when 0 value?
+- analyze, but mute (add boolean setting?)
 - fade after 3 secs
-- integrate audio sync
+- flash screen when snapshot
 
 * v3 due friday

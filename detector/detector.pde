@@ -25,15 +25,16 @@ int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
-int display_scale = 2;      // adjust to match size() 
+int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
+int freeze_time = 0;        // current_time when freeze started
 Boolean mute = true;        // mute sound, still perform analysis
 
 public void setup() {
-    size(640, 360);
-    // size(1280, 720);
-    // size(1920, 1080);
+    size(640, 360);         // display_scale = 1
+    // size(1280, 720);     // display_scale = 2
+    // size(1920, 1080);    // display_scale = 3
     pixelDensity(displayDensity());
     background(0);
     noStroke();
@@ -56,19 +57,35 @@ public void setup() {
 }
 
 public void draw() {
-    background(0);
 
     if (playing) {
         current_time = millis() - millis_start;
-        if (playing && ((current_time) >= sample.duration() * 1000))
-            stop_sample();
-        if (current_time >= verdicts[pointer].in)
-            verdicts[pointer].display(int(width/2),int(height/2));
-        if (current_time >= verdicts[(pointer + 1) % verdicts.length].in)
-            pointer++;
-        println(verdicts[pointer].in + " / " + current_time);
+        freeze_fade();
     }
     counter++;
+}
+
+public void freeze_fade() {
+
+    // globals current_time, freeze_time
+
+    int fade_duration = 1000;       // duration in millis
+    int freeze_duration = 3000;     // duration in millis
+
+    if (current_time >= verdicts[pointer].in) {
+        background(0);      
+        verdicts[pointer].display(int(width/2),int(height/2));
+        // add show_capture_time (from spectrogram) for debug ?
+        // show_capture_time(width-70, 44);
+        freeze_time = current_time;
+        pointer++;
+    }
+    if ((current_time >= freeze_time + freeze_duration) &&
+        (current_time <= freeze_time + freeze_duration + fade_duration)) {
+        noStroke();
+        fill(0,20);
+        rect(0,0,width,height);
+    }
 }
 
 /*

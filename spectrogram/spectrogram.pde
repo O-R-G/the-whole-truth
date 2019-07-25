@@ -44,17 +44,15 @@ int rows = 640;             // spectrogram height in pixels
                             // also the number of bands in FFT
 float sampleRate = 48000;   // from the audio file
 int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
-int column;
-
-int capture_delay = 300;    // delay before captures FFT so gets a broader spectrum
-                            // would be better to average over a longer time
-                            // ** may not be necc **
-
-Boolean fade;               // snap_shot start fade
-Boolean fading;             // snap_shot currently fading
-
-Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
+int column;                 // current x position in spectrogram
+int freeze_time = 0;        // current_time when freeze started
 Boolean mute = true;        // mute sound, still perform analysis
+
+/*
+// ** to implement **
+Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
+Boolean muted_and_synced = false; *
+*/
 
 public void setup() {
     size(360, 640, FX2D);
@@ -72,7 +70,7 @@ public void setup() {
     minim = new Minim(this);
     sample = minim.loadFile(data_path + "the-whole-truth.wav", bufferSize);
     fft = new FFT(sample.bufferSize(), sampleRate);
-    fft.window(FFT.HAMMING);      // tapered time window avoids 'splatter'
+    fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
     // sync_sample();
     play_sample();
 
@@ -81,38 +79,37 @@ public void setup() {
 }
 
 public void draw() {
-    background(0);
-      
-    // continuous
-
-    // update fft data
 
     fft.forward(sample.mix);    
     update_spectrogram();
-            draw_spectrogram();
-    // if (counter % 300 < 50)
-        
-    counter++;
-
-/*
-    // snap_shot
-
     if (playing) {
         current_time = millis() - millis_start;
-        // draw_grid();
-
-        // take snap_shot
-        if (current_time >= verdicts[pointer].in + capture_delay) {
-            background(0);
-            show_capture_time(width-70, 44);
-            draw_spectrogram();
-            // draw_axis();
-            pointer++;
-        }
+        freeze_fade();        
+        // show_current_time(width-70, 24);
     }
-*/
+    counter++;
+}
 
-    show_current_time(width-70, 24);
+public void freeze_fade() {
+   
+    // globals current_time, freeze_time
+    
+    int fade_duration = 1000;       // duration in millis
+    int freeze_duration = 3000;     // duration in millis
+        
+    if (current_time >= verdicts[pointer].in) {
+        background(0);
+        draw_spectrogram();
+        show_capture_time(width-70, 44);
+        freeze_time = current_time;
+        pointer++;
+    }
+    if ((current_time >= freeze_time + freeze_duration) &&
+        (current_time <= freeze_time + freeze_duration + fade_duration)) {
+        noStroke();
+        fill(0,20);
+        rect(0,0,width,height);
+    }
 }
 
 /*

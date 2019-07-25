@@ -39,9 +39,7 @@ x mouse or keyboard events pass through between java apps?
 + screen black in before fft values exist
 + analyze, but mute (add boolean setting?)
 + add black < 50, add white > 200 in rotate_hue()
-- fade after 3 secs
-  fade, just doesnt update screen ?
-  is_fading, updates with fill(0,fade_time)
-- flash screen when snapshot
++ freeze and fade after 3 secs
+- flash screen when snapshot flash_screen()
 
 * v3 due friday

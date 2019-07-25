@@ -45,8 +45,15 @@ int rows = 640;             // spectrogram height in pixels
 float sampleRate = 48000;   // from the audio file
 int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;
+
 int capture_delay = 300;    // delay before captures FFT so gets a broader spectrum
                             // would be better to average over a longer time
+                            // ** may not be necc **
+
+Boolean fade;               // snap_shot start fade
+Boolean fading;             // snap_shot currently fading
+
+Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
 Boolean mute = true;        // mute sound, still perform analysis
 
 public void setup() {
@@ -78,25 +85,32 @@ public void draw() {
       
     // continuous
 
+    // update fft data
+
     fft.forward(sample.mix);    
     update_spectrogram();
+            draw_spectrogram();
     // if (counter % 300 < 50)
-        draw_spectrogram();
-    // draw_axis();
+        
     counter++;
 
-    // snapshot
+/*
+    // snap_shot
 
     if (playing) {
         current_time = millis() - millis_start;
         // draw_grid();
 
+        // take snap_shot
         if (current_time >= verdicts[pointer].in + capture_delay) {
             background(0);
             show_capture_time(width-70, 44);
+            draw_spectrogram();
+            // draw_axis();
             pointer++;
         }
     }
+*/
 
     show_current_time(width-70, 24);
 }
@@ -118,7 +132,10 @@ private void show_current_time(int x, int y) {
     int seconds = seconds_total % 60;
     String sec = nf(seconds, 2);
     String min = nf(minutes, 2);
-    fill(255/3,255,255);
+    fill(0);
+    noStroke();
+    rect(x-24,y-24,100,24);
+    fill(255/2,255,255);
     text(min + ":" + sec,x,y);
 }
 
@@ -166,7 +183,6 @@ Boolean update_spectrogram() {
         --.+.-+.
         ..x.**.+
         .+....-.
-
     */
 
     for (int i = 0; i < rows; i++)
@@ -175,8 +191,6 @@ Boolean update_spectrogram() {
     if (column == columns)
         column = 0;
         
-    println("column: " + column);
-    println("counter: " + counter);
     return true;
 }
 
@@ -187,20 +201,16 @@ Boolean draw_spectrogram() {
 
     for (int i = 0; i < columns-column; i++) {
         for (int j = 0; j < rows; j++) {
-            if (counter == column-1)    // no information yet
-                stroke(0);
-            else
-                stroke(rotate_hue(sgram[j][i+column],90.0),255,255);
+            stroke(rotate_hue_with_filter(sgram[j][i+column],90.0));
             point(i,height-j);
         }
     }
     for (int i = 0; i < column; i++) {
         for (int j = 0; j < rows; j++) {
-            stroke(rotate_hue(sgram[j][i],90.0),255,255);
+            stroke(rotate_hue_with_filter(sgram[j][i],90.0));
             point(i+columns-column,height-j);
         }
     }
-        
     return true;
 }
 
@@ -217,6 +227,32 @@ float rotate_hue(float hue, float degrees) {
     hue = (hue_mapped - degrees_mapped + 255) % 255;
 
     return hue;
+}
+
+color rotate_hue_with_filter(float hue, float degrees) {
+
+    // hue {0-255}, degrees {0-360}
+    // remap to 0-255, then subtract degrees_mapped from hue_mapped % 255
+    // + 255 for negative values wrapping around 0
+    // assumes counterclockwise rotation
+    // hi-pass, lo-pass filter mimics spectrogram gradients
+    // add black when low, add white when high
+    // k = color(h,255,0)
+    // w = color(h,0,255)
+
+    float brightness = 255;
+    float saturation = 255;
+    if (hue < 20)
+        brightness = map(hue, 0, 20, 0, 255);
+    if (hue > 245)
+        saturation = map(hue, 245, 255, 0, 255);
+
+    // float hue_mapped = map(hue, 0, 255, 0, 127);
+    float hue_mapped = map(hue, 0, 255, 0, 255);
+    float degrees_mapped = map(degrees, 0, 360, 0, 255);
+    hue = (hue_mapped - degrees_mapped + 255) % 255;
+
+    return color(hue, saturation, brightness);
 }
 
 void draw_axis() {

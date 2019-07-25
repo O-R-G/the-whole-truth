@@ -10,7 +10,7 @@
 x alternate type? helv, arial, menlo
 x adjust colors
 - verdict 3 seconds, flash
-- no verdict black
+- no verdict = black
 
 ** waveform **
 x read from verdicts.csv    
@@ -38,7 +38,10 @@ x mouse or keyboard events pass through between java apps?
 + integrate audio sync
 + screen black in before fft values exist
 + analyze, but mute (add boolean setting?)
++ add black < 50, add white > 200 in rotate_hue()
 - fade after 3 secs
+  fade, just doesnt update screen ?
+  is_fading, updates with fill(0,fade_time)
 - flash screen when snapshot
 
 * v3 due friday

@@ -9,8 +9,8 @@
 + multiline txt wrap
 x alternate type? helv, arial, menlo
 x adjust colors
-- verdict 3 seconds, flash
-- no verdict = black
++ verdict 3 seconds
++ no verdict = black
 
 ** waveform **
 x read from verdicts.csv    
@@ -40,6 +40,6 @@ x mouse or keyboard events pass through between java apps?
 + analyze, but mute (add boolean setting?)
 + add black < 50, add white > 200 in rotate_hue()
 + freeze and fade after 3 secs
-- flash screen when snapshot flash_screen()
+x flash screen when snapshot flash_screen()
 
 * v3 due friday

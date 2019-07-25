@@ -77,7 +77,7 @@ public void freeze_fade() {
     if (current_time >= verdicts[pointer].in) {
         background(0);      
         verdicts[pointer].display(int(width/2),int(height/2));
-        show_capture_time(width-70, 44);
+        // show_capture_time(width-70, 44);
         freeze_time = current_time;
         pointer++;
     }

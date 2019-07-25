@@ -29,7 +29,8 @@ int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 int freeze_time = 0;        // current_time when freeze started
-Boolean mute = true;        // mute sound, still perform analysis
+Boolean mute = true;        // no sound
+Boolean sync = true;        // start audio w/sync_sample()
 
 public void setup() {
     size(640, 360);         // display_scale = 1
@@ -45,8 +46,10 @@ public void setup() {
     pointer = 0;
 
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
-    // sync_sample();
-    play_sample();
+    if (sync)
+        sync_sample();
+    else
+        play_sample();
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48 * display_scale);
     textFont(mono);
@@ -57,7 +60,6 @@ public void setup() {
 }
 
 public void draw() {
-
     if (playing) {
         current_time = millis() - millis_start;
         freeze_fade();
@@ -75,8 +77,7 @@ public void freeze_fade() {
     if (current_time >= verdicts[pointer].in) {
         background(0);      
         verdicts[pointer].display(int(width/2),int(height/2));
-        // add show_capture_time (from spectrogram) for debug ?
-        // show_capture_time(width-70, 44);
+        show_capture_time(width-70, 44);
         freeze_time = current_time;
         pointer++;
     }
@@ -86,6 +87,47 @@ public void freeze_fade() {
         fill(0,20);
         rect(0,0,width,height);
     }
+}
+
+/*
+
+    display time
+
+*/
+
+private void show_current_millis() {
+    textFont(mono, 16);
+    fill(255);
+    text(millis(),width-100,24);
+    textFont(mono);
+}
+
+private void show_current_time(int x, int y) {
+    textFont(mono, 16);
+    int seconds_total = millis() / 1000;
+    int minutes = floor(seconds_total / 60);
+    int seconds = seconds_total % 60;
+    String sec = nf(seconds, 2);
+    String min = nf(minutes, 2);
+    fill(0);
+    noStroke();
+    rect(x-24,y-24,100,24);
+    fill(255/2,255,255);
+    text(min + ":" + sec,x,y);
+    textFont(mono);
+}
+
+private void show_capture_time(int x, int y) {
+    textFont(mono, 16);
+    int seconds_total = millis() / 1000;
+    int minutes = floor(seconds_total / 60);
+    int seconds = seconds_total % 60;
+    String sec = nf(seconds, 2);
+    String min = nf(minutes, 2);
+    fill(0,0,255);
+    text(min + ":" + sec,x,y);
+    textFont(mono);
+
 }
 
 /*
@@ -147,6 +189,8 @@ Boolean play_sample() {
         sample.loop();      
         if (mute)
             sample.amp(0.0);
+        else    
+            sample.amp(1.0);
         playing = true;
         return true;
     } else {

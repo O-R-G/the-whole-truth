@@ -28,6 +28,8 @@ int samples = 100;          // samples of waveform to read at once
 int display_scale = 1;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
+Boolean mute = false;       // no sound
+Boolean sync = true;        // start audio w/sync_sample()
 
 public void setup() {
     size(640, 360);
@@ -36,10 +38,12 @@ public void setup() {
     background(255);
 
     sample = new SoundFile(this, data_path + "the-whole-truth.wav");
-    // sync_sample();
-    play_sample();
     waveform = new Waveform(this, samples);
     waveform.input(sample);
+    if (sync)
+        sync_sample();
+    else
+        play_sample();
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
@@ -74,8 +78,11 @@ public void draw() {
 Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
-        sample.loop();      
-        sample.amp(1.0);
+        sample.loop();
+        if (mute)
+            sample.amp(0.0);
+        else   
+            sample.amp(1.0);
         playing = true;
         return true;
     } else {

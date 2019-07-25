@@ -46,13 +46,9 @@ float sampleRate = 48000;   // from the audio file
 int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
-Boolean mute = true;        // mute sound, still perform analysis
-
-/*
-// ** to implement **
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean muted_and_synced = false; *
-*/
+Boolean mute = true;        // no sound
+Boolean sync = true;        // start audio w/sync_sample()
 
 public void setup() {
     size(360, 640, FX2D);
@@ -71,8 +67,10 @@ public void setup() {
     sample = minim.loadFile(data_path + "the-whole-truth.wav", bufferSize);
     fft = new FFT(sample.bufferSize(), sampleRate);
     fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
-    // sync_sample();
-    play_sample();
+    if (sync) 
+        sync_sample();
+    else 
+        play_sample();
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
@@ -332,6 +330,8 @@ Boolean play_sample() {
         sample.play();
         if (mute)
             sample.mute();
+        else
+            sample.unmute();
         playing = true;
         return true;
     } else {

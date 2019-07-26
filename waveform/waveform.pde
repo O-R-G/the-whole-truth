@@ -28,6 +28,7 @@ int samples = 100;          // samples of waveform to read at once
 int display_scale = 1;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
+Boolean debug = true;       // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = true;        // start audio w/sync_sample()
 
@@ -55,19 +56,58 @@ public void draw() {
     strokeWeight(2);
     noFill();
 
-    waveform.analyze();
-  
-    beginShape();
-    for(int i = 0; i < samples; i++){
-        // Draw current data of the waveform
-        // Each sample in the data array is between -1 and +1 
-        vertex(
-            map(i, 0, samples, 0, width),
-            map(waveform.data[i], -1, 1, 0, height)
-        );
+    if (playing) {
+        current_time = millis() - millis_start;
+        waveform.analyze();
+        beginShape();
+        for(int i = 0; i < samples; i++){
+            vertex(
+                map(i, 0, samples, 0, width),
+                map(waveform.data[i], -1, 1, 0, height)
+            );
+        }
+        endShape();
+        if (debug)
+            show_current_time(width-70, 24);
     }
-    endShape();
 }
+
+/*
+
+    display time
+
+*/
+
+private void show_current_millis() {
+    fill(255);
+    text(millis(),width-100,24);
+}
+
+private void show_current_time(int x, int y) {
+    fill(0);
+    noStroke();
+    rect(x-24,y-24,100,30);
+    fill(255/3,255,255);
+    text(get_time(current_time),x,y);
+}
+
+private void show_capture_time(int x, int y) {
+    fill(0,0,255);
+    text(get_time(current_time),x,y);
+}
+
+private String get_time(int current_time) {
+    int seconds = (current_time / 1000) % 60;
+    int minutes = (current_time / (1000 * 60)) % 60;
+    return nf(minutes, 2) + ":" + nf(seconds, 2);
+}
+
+/*
+private void timing_debug(int x, int y) {
+    text(verdicts[pointer].txt,x,y);
+    saveFrame("out/debug-######.tif");
+}
+*/
 
 /*
 

@@ -47,8 +47,9 @@ int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean mute = true;        // no sound
-Boolean sync = true;        // start audio w/sync_sample()
+Boolean debug = true;       // display time debug
+Boolean mute = true;       // no sound
+Boolean sync = true;       // start audio w/sync_sample()
 
 public void setup() {
     size(360, 640, FX2D);
@@ -82,8 +83,9 @@ public void draw() {
     update_spectrogram();
     if (playing) {
         current_time = millis() - millis_start;
-        freeze_fade();        
-        // show_current_time(width-70, 24);
+        freeze_fade();
+        if (debug)
+            show_current_time(width-70, 24);
     }
     counter++;
 }
@@ -99,6 +101,7 @@ public void freeze_fade() {
         background(0);
         draw_spectrogram();
         show_capture_time(width-70, 44);
+        timing_debug(10, 44);
         freeze_time = current_time;
         pointer++;
     }
@@ -122,26 +125,27 @@ private void show_current_millis() {
 }
 
 private void show_current_time(int x, int y) {
-    int seconds_total = millis() / 1000;
-    int minutes = floor(seconds_total / 60);
-    int seconds = seconds_total % 60;
-    String sec = nf(seconds, 2);
-    String min = nf(minutes, 2);
     fill(0);
     noStroke();
-    rect(x-24,y-24,100,24);
-    fill(255/2,255,255);
-    text(min + ":" + sec,x,y);
+    rect(x-24,y-24,100,30);
+    fill(255/3,255,255);
+    text(get_time(current_time),x,y);
 }
 
 private void show_capture_time(int x, int y) {
-    int seconds_total = millis() / 1000;
-    int minutes = floor(seconds_total / 60);
-    int seconds = seconds_total % 60;
-    String sec = nf(seconds, 2);
-    String min = nf(minutes, 2);
     fill(0,0,255);
-    text(min + ":" + sec,x,y);
+    text(get_time(current_time),x,y);
+}
+
+private String get_time(int current_time) {
+    int seconds = (current_time / 1000) % 60;
+    int minutes = (current_time / (1000 * 60)) % 60;
+    return nf(minutes, 2) + ":" + nf(seconds, 2);
+}
+
+private void timing_debug(int x, int y) {
+    text(verdicts[pointer].txt,x,y);
+    saveFrame("out/debug-######.tif"); 
 }
 
 /* 

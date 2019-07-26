@@ -29,6 +29,7 @@ int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 int freeze_time = 0;        // current_time when freeze started
+Boolean debug = true;       // display time debug
 Boolean mute = true;        // no sound
 Boolean sync = true;        // start audio w/sync_sample()
 
@@ -77,7 +78,10 @@ public void freeze_fade() {
     if (current_time >= verdicts[pointer].in) {
         background(0);      
         verdicts[pointer].display(int(width/2),int(height/2));
-        // show_capture_time(width-70, 44);
+        if (debug) {
+            show_capture_time(width-70, 44);
+            timing_debug(10, 44);
+        }
         freeze_time = current_time;
         pointer++;
     }
@@ -96,38 +100,44 @@ public void freeze_fade() {
 */
 
 private void show_current_millis() {
-    textFont(mono, 16);
     fill(255);
     text(millis(),width-100,24);
-    textFont(mono);
 }
 
 private void show_current_time(int x, int y) {
-    textFont(mono, 16);
-    int seconds_total = millis() / 1000;
-    int minutes = floor(seconds_total / 60);
-    int seconds = seconds_total % 60;
-    String sec = nf(seconds, 2);
-    String min = nf(minutes, 2);
     fill(0);
     noStroke();
-    rect(x-24,y-24,100,24);
-    fill(255/2,255,255);
-    text(min + ":" + sec,x,y);
+    rect(x-24,y-24,100,30);
+    fill(255/3,255,255);
+    textFont(mono, 16);
+    textAlign(LEFT, TOP);
+    text(get_time(current_time),x,y);
     textFont(mono);
+    textAlign(CENTER, CENTER);
 }
 
 private void show_capture_time(int x, int y) {
-    textFont(mono, 16);
-    int seconds_total = millis() / 1000;
-    int minutes = floor(seconds_total / 60);
-    int seconds = seconds_total % 60;
-    String sec = nf(seconds, 2);
-    String min = nf(minutes, 2);
     fill(0,0,255);
-    text(min + ":" + sec,x,y);
+    textFont(mono, 16);
+    textAlign(LEFT, TOP);
+    text(get_time(current_time),x,y);
     textFont(mono);
+    textAlign(CENTER, CENTER);
+}
 
+private String get_time(int current_time) {
+    int seconds = (current_time / 1000) % 60;
+    int minutes = (current_time / (1000 * 60)) % 60;
+    return nf(minutes, 2) + ":" + nf(seconds, 2);
+}
+
+private void timing_debug(int x, int y) {
+    textFont(mono, 16);
+    textAlign(LEFT, TOP);
+    text(verdicts[pointer].txt,x,y);
+    saveFrame("out/debug-######.tif");
+    textFont(mono);
+    textAlign(CENTER, CENTER);
 }
 
 /*
@@ -186,7 +196,7 @@ Boolean set_colors() {
 Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
-        sample.loop();      
+        sample.play();      
         if (mute)
             sample.amp(0.0);
         else    

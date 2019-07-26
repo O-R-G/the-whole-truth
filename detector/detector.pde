@@ -29,7 +29,7 @@ int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 int freeze_time = 0;        // current_time when freeze started
-Boolean debug = true;       // display time debug
+Boolean debug = false;       // display time debug
 Boolean mute = true;        // no sound
 Boolean sync = true;        // start audio w/sync_sample()
 

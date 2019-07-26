@@ -47,7 +47,7 @@ int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean debug = true;       // display time debug
+Boolean debug = false;       // display time debug
 Boolean mute = true;       // no sound
 Boolean sync = true;       // start audio w/sync_sample()
 
@@ -101,7 +101,8 @@ public void freeze_fade() {
         background(0);
         draw_spectrogram();
         show_capture_time(width-70, 44);
-        timing_debug(10, 44);
+        if (debug)
+            timing_debug(10, 44);
         freeze_time = current_time;
         pointer++;
     }

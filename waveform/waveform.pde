@@ -28,7 +28,7 @@ int samples = 100;          // samples of waveform to read at once
 int display_scale = 1;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-Boolean debug = true;       // display time debug
+Boolean debug = false;       // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = true;        // start audio w/sync_sample()
 

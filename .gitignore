@@ -1,2 +1,8 @@
 .DS_Store
 error
+detector/error
+waveform/error
+spectrogram/error
+detector/out
+waveform/out
+spectrogram/out

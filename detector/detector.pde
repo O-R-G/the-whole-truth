@@ -64,17 +64,18 @@ public void draw() {
     if (playing) {
         current_time = millis() - millis_start;
         freeze_fade();
+        if (pointer >= verdicts.length)
+            exit();        
     }
     counter++;
 }
 
 public void freeze_fade() {
-
     // globals current_time, freeze_time
-
     int fade_duration = 1000;       // duration in millis
     int freeze_duration = 3000;     // duration in millis
 
+    // freeze
     if (current_time >= verdicts[pointer].in) {
         background(0);      
         verdicts[pointer].display(int(width/2),int(height/2));
@@ -85,6 +86,7 @@ public void freeze_fade() {
         freeze_time = current_time;
         pointer++;
     }
+    // fade
     if ((current_time >= freeze_time + freeze_duration) &&
         (current_time <= freeze_time + freeze_duration + fade_duration)) {
         noStroke();
@@ -184,6 +186,7 @@ Boolean set_colors() {
     colors.set("SUBJECT IS NOT SURE", "255,253,205");
     colors.set("INACCURACY", "140,136,39");
     colors.set("LIE", "0,0,0");
+    colors.set("* END OF FILE *", "0,0,0");
     return true;
 }
 

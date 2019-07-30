@@ -48,8 +48,8 @@ int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
 Boolean debug = false;       // display time debug
-Boolean mute = true;       // no sound
-Boolean sync = true;       // start audio w/sync_sample()
+Boolean mute = false;       // no sound
+Boolean sync = false;       // start audio w/sync_sample()
 
 public void setup() {
     size(360, 640, FX2D);
@@ -86,17 +86,18 @@ public void draw() {
         freeze_fade();
         if (debug)
             show_current_time(width-70, 24);
+        if (pointer >= verdicts.length)
+            exit();
     }
     counter++;
 }
 
 public void freeze_fade() {
-   
     // globals current_time, freeze_time
-    
     int fade_duration = 1000;       // duration in millis
     int freeze_duration = 3000;     // duration in millis
-        
+
+    // freeze
     if (current_time >= verdicts[pointer].in) {
         background(0);
         draw_spectrogram();
@@ -106,6 +107,7 @@ public void freeze_fade() {
         freeze_time = current_time;
         pointer++;
     }
+    // fade
     if ((current_time >= freeze_time + freeze_duration) &&
         (current_time <= freeze_time + freeze_duration + fade_duration)) {
         noStroke();
@@ -320,6 +322,7 @@ Boolean set_colors() {
     colors.set("SUBJECT IS NOT SURE", "255,253,205");
     colors.set("INACCURACY", "140,136,39");
     colors.set("LIE", "0,0,0");
+    colors.set("* END OF FILE *", "0,0,0");
     return true;
 }
 
@@ -371,3 +374,12 @@ void stop() {
     minim.stop();
     super.stop();
 }
+
+/*
+void stop_exit() {
+    // stop() automatically runs on termination
+    // but minim wants to dispose object before
+    stop();
+    exit();
+}
+*/

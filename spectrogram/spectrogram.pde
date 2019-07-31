@@ -58,7 +58,7 @@ int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean debug = true;       // display time debug
+Boolean debug = false;      // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video

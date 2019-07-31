@@ -51,7 +51,7 @@ float frameDuration = 1 / movieFPS;     // ** to fix **
 int render_audio_fft_to_txt(String file_name, int buffer_size) {
 
     // minim based audio FFT to data text file conversion.
-    // non real-time, so you don't wait 5 minutes for a 5 minute song :)
+    // non real-time, so you don't wait 5 minutes for a 5 minute song
     // you can look at the produced txt file in the data folder
     // after running this program to see how it looks like.
     // file contains many rows, each row looks like this:
@@ -61,6 +61,8 @@ int render_audio_fft_to_txt(String file_name, int buffer_size) {
     // first values in each row are low frequencies (bass)
     // and they go towards high frequency as we advance towards
     // the end of the line.
+
+    println("FFT started (please wait) ...");
 
     PrintWriter output;
     Minim minim = new Minim(this);
@@ -76,7 +78,7 @@ int render_audio_fft_to_txt(String file_name, int buffer_size) {
     int total_chunks = (samples.length / fft_size) + 1;
     int bands = fft.specSize();      
 
-    // manually fft through samples, one buffer at a time
+    // manually sift through samples, one buffer at a time
     for (int j = 0; j < total_chunks; j++) {
         int chunk_start_index = j * fft_size;   
         int chunk_size = min(samples.length - chunk_start_index, fft_size );
@@ -95,7 +97,57 @@ int render_audio_fft_to_txt(String file_name, int buffer_size) {
     output.close();
     println(bands + " bands");
     println(bands + " bands");
-    println("FFT sound analysis done");
+    println("FFT done.");
+    return bands;   
+}
+
+int render_audio_amplitude_to_txt(String file_name, int buffer_size) {
+
+    // minim based audio amplitude to data text file conversion.
+    // non real-time, so you don't wait 5 minutes for a 5 minute song 
+    // you can look at the produced txt file in the data folder
+    // after running this program to see how it looks like.
+    // file contains many rows, each row looks like this:
+    // T|A|
+    // where T is the time in seconds
+    // and A is amplitude 
+
+    println("Amplitude started (please wait) ...");
+
+    PrintWriter output;
+    Minim minim = new Minim(this);
+
+    output = createWriter(dataPath(file_name + ".txt"));
+    AudioSample sample = minim.loadSample(file_name, buffer_size); 
+    int fft_size = buffer_size;
+    float sample_rate = sample.sampleRate();
+    float[] fft_samples = new float[fft_size];
+    float[] samples = sample.getChannel(AudioSample.LEFT);
+    FFT fft = new FFT(fft_size, sample_rate);
+    fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
+    int total_chunks = (samples.length / fft_size) + 1;
+    int bands = fft.specSize();      
+
+    // manually sift through samples, one buffer at a time
+    for (int j = 0; j < total_chunks; j++) {
+        int chunk_start_index = j * fft_size;   
+        int chunk_size = min(samples.length - chunk_start_index, fft_size );
+        System.arraycopy(samples, chunk_start_index, fft_samples, 0, chunk_size);      
+        if (chunk_size < fft_size)
+            java.util.Arrays.fill(fft_samples, chunk_size, fft_samples.length - 1, 0.0);
+        fft.forward(fft_samples);
+        StringBuilder msg = new StringBuilder(nf(chunk_start_index/sample_rate, 0, 3).replace(',', '.'));
+        for (int i = 0; i < bands; i++)
+            msg.append(SEP + nf(fft.getBand(i), 0, 4).replace(',', '.'));
+        output.println(msg.toString());
+    }
+    sample.close();
+    minim.stop();
+    output.flush();
+    output.close();
+    println(bands + " bands");
+    println(bands + " bands");
+    println("Amplitude done.");
     return bands;   
 }
 

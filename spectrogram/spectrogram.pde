@@ -42,7 +42,7 @@ int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth.wav";
+String file_name = "the-whole-truth-dev.wav";
 
 int[][] sgram;              // all spectrogram data
 int columns = 360;          // spectrogram width in pixels
@@ -78,6 +78,7 @@ public void setup() {
         videoExport = new VideoExport(this);
         videoExport.setFrameRate(video_fps);
         videoExport.setAudioFileName(data_path + file_name);
+        videoExport.setMovieFileName("out/" + file_name + ".mp4");
         videoExport.startMovie();
         playing = true;
     } else

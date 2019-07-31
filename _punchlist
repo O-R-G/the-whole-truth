@@ -43,7 +43,7 @@ x read from verdicts.csv
 + add black < 50, add white > 200 in rotate_hue()
 + freeze and fade after 3 secs
 x flash screen when snapshot flash_screen()
-- fix render_audio_to_txt() in render.pde (fft logic)
-- clean up use of Boolean render in spectrogram.pde
++ fix render_audio_to_txt() in render.pde (fft logic) 
++ clean up use of Boolean render in spectrogram.pde
 
 * v4 .mov (3) out asap

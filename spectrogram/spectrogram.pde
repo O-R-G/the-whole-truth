@@ -45,47 +45,31 @@ String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_tru
 String file_name = "the-whole-truth.wav";
 
 int[][] sgram;              // all spectrogram data
-int columns = 360;          // spectrogram width in pixels
-int rows = 640;             // spectrogram height in pixels
-                            // also the number of bands in FFT
-float sampleRate = 48000;   // from the audio file
-int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
+int columns = 360;          // spectrogram display width in pixels
+int rows = 640;             // spectrogram display height in pixels
+int bands;                  // number of frequency ramge categories in FFT
+float sample_rate = 48000;  // from the audio file
+int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
+                            // the larger the buffer, the more fft bands
+                            // and the less accurate the time 
+                            // the smaller, the fewer bands (freq resolution)
+                            // but the more accurate the time
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
-int audio_duration;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean debug = true;      // display time debug
-Boolean mute = false;        // no sound
+Boolean debug = true;       // display time debug
+Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
-Boolean video = true;       // export video ** perhaps redundant? **
 Boolean render = true;      // render audio to txt, read txt, output video
+Boolean video = true;       // export video when rendering
 
 public void setup() {
     size(360, 640, FX2D);
     pixelDensity(displayDensity());
-
     background(0);
     noStroke();
     colorMode(HSB);
-
-    if (render) {
-        // process audio to txt (non-realtime)
-        // see render.pde for detail
-        frameRate(1000);
-        render_audio_to_txt(data_path + file_name);
-        reader = createReader(data_path + file_name + ".txt");
-        videoExport = new VideoExport(this);
-        videoExport.setFrameRate(video_fps);
-        videoExport.setAudioFileName(data_path + file_name);
-        videoExport.setMovieFileName("out/" + file_name + ".mp4");
-        videoExport.startMovie();
-        playing = true;
-    } else
-        frameRate(30);      // or maybe ok to let run fast as possible?
-
-    sgram = new int[rows][columns];
-
     set_colors();
     load_csv();
     counter = 0;
@@ -93,18 +77,30 @@ public void setup() {
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
-        
-    minim = new Minim(this);
-    sample = minim.loadFile(data_path + file_name, bufferSize);
-    fft = new FFT(sample.bufferSize(), sampleRate);
-    fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
-    if (!render) {
+
+    sgram = new int[rows][columns];
+
+    if (render) {
+        frameRate(1000);
+        bands = render_audio_fft_to_txt(data_path + file_name, buffer_size);
+        reader = createReader(data_path + file_name + ".txt");
+        videoExport = new VideoExport(this);
+        videoExport.setFrameRate(video_fps);
+        videoExport.setAudioFileName(data_path + file_name);
+        videoExport.setMovieFileName("out/" + file_name + ".mp4");
+        videoExport.startMovie();
+        playing = true;
+    } else {
+        frameRate(30);
+        minim = new Minim(this);
+        sample = minim.loadFile(data_path + file_name, buffer_size);
+        fft = new FFT(sample.bufferSize(), sample_rate);
+        fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
         if (sync) 
             sync_sample();
         else 
             play_sample();
     }
-    audio_duration = round(sample.length());    // may not need this
 }
 
 public void draw() {
@@ -112,29 +108,27 @@ public void draw() {
     if (playing) {
         update_spectrogram();
         if (render) {
-            // Our movie will have 30 frames per second.
-            // Our FFT analysis probably produces
+            // movie will have 30 frames per second.
+            // FFT analysis probably produces
             // 43 rows per second (44100 / fftSize) or
             // 46.875 rows per second (48000 / fftSize).
-            // We have two different data rates: 30fps vs 43rps.
-            // How to deal with that? We render frames as
+            // we have two different data rates: 30fps vs 43rps.
+            // how to deal with that? We render frames as
             // long as the movie time is less than the latest
             // data (sound) time.
-            // I added an offset of half frame duration,
-            // but I'm not sure if it's useful nor what
-            // would be the ideal value. Please experiment :)
     
-            // the solution is to make sure current_time comes from the 
+            // solution is to make sure current_time comes from the 
             // video export, and then checks against the fft time stamps
-            // to move the fft forward, reference the correct one
-
-            // videoExport as master, determines current_time
-            // add fft_time as global
+            // to move the fft forward, reference the correct one.
+            // videoExport is the master, determines current_time
             // fft forward by reading next line from buffered reader
-            // which holds the fft data
+            // which holds the fft data. also reads from txt file 
+            // in update_spectrogram() but since in both places 
+            // String data[] is local then these are independent 
+            // pointers to current line in the file. 
 
             if (current_time > fft_time) {
-                String data[] = read_audio_from_txt();
+                String data[] = read_audio_from_txt(bands, video);
                 fft_time = int(float(data[0]) * 1000);
             }
             current_time = int(videoExport.getCurrentTime()*1000);
@@ -231,7 +225,7 @@ Boolean update_spectrogram() {
         amplitude includes direction, so can be positive or negative)
         updates one column (all rows) because spectrogram is like
         spectrum rotated 90 degrees counterclockwise and then 90 degrees in z
-        fft.specSize() returns number of bands (same as rows)
+        fft.specSize() returns number of bands
 
         waveform (amp/time)
             _
@@ -251,15 +245,15 @@ Boolean update_spectrogram() {
         .+....-.
     */
 
-    // this would be better handled if passed, but global for now
-
     if (render) {
-        // only 34 bands when rendering
-        // so % around that number [0-33]
-        String data[] = read_audio_from_txt();
+        float band = 0.0;
+        String data[] = read_audio_from_txt(bands, video);
         for (int i = 1; i < rows; i++) {
-            // float value = float(data[i]);    // cast to float?
-            sgram[i][column] = int(data[i % 33]);
+            if (i < bands) 
+                band = float(data[i]);
+            else 
+                band = band;    // if out of range, fill rows with final value
+            sgram[i][column] = (int)Math.round(Math.max(0,2*20*Math.log10(1000*band)));
         }
     } else {            
         fft.forward(sample.mix);

@@ -36,12 +36,13 @@ Verdict[] verdicts;
 
 int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
+int fft_time = 0;           // position in fft datafile for rendering (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth-dev.wav";
+String file_name = "the-whole-truth.wav";
 
 int[][] sgram;              // all spectrogram data
 int columns = 360;          // spectrogram width in pixels
@@ -51,14 +52,13 @@ float sampleRate = 48000;   // from the audio file
 int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
-// int video_fps = 30;
-int video_fps = 23;         
+int video_fps = 30;
 int audio_duration;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
 Boolean debug = true;      // display time debug
 Boolean mute = false;        // no sound
 Boolean sync = false;       // start audio w/sync_sample()
-Boolean video = true;       // export video
+Boolean video = true;       // export video ** perhaps redundant? **
 Boolean render = true;      // render audio to txt, read txt, output video
 
 public void setup() {
@@ -80,10 +80,8 @@ public void setup() {
         videoExport.setAudioFileName(data_path + file_name);
         videoExport.startMovie();
         playing = true;
-    } 
-
-    // frameRate(30);      // render is sensitive to frameRate, txt file is at 30fps
-                        // this needs some thought
+    } else
+        frameRate(30);      // or maybe ok to let run fast as possible?
 
     sgram = new int[rows][columns];
 
@@ -95,17 +93,17 @@ public void setup() {
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
         
-        minim = new Minim(this);
-        sample = minim.loadFile(data_path + file_name, bufferSize);
-        fft = new FFT(sample.bufferSize(), sampleRate);
-        fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
-        if (!render) {
-            if (sync) 
-                sync_sample();
-            else 
-                play_sample();
-        }
-        audio_duration = round(sample.length());    // may not need this
+    minim = new Minim(this);
+    sample = minim.loadFile(data_path + file_name, bufferSize);
+    fft = new FFT(sample.bufferSize(), sampleRate);
+    fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
+    if (!render) {
+        if (sync) 
+            sync_sample();
+        else 
+            play_sample();
+    }
+    audio_duration = round(sample.length());    // may not need this
 }
 
 public void draw() {
@@ -113,9 +111,6 @@ public void draw() {
     if (playing) {
         update_spectrogram();
         if (render) {
-            // should be consolidated in one read_audio call
-            // also needs to use this insight:
-
             // Our movie will have 30 frames per second.
             // Our FFT analysis probably produces
             // 43 rows per second (44100 / fftSize) or
@@ -127,22 +122,23 @@ public void draw() {
             // I added an offset of half frame duration,
             // but I'm not sure if it's useful nor what
             // would be the ideal value. Please experiment :)
-
-            // ** this is the problem which makes the quicktime run at diff lengths **
-            // to be solved
-
-            // currently reading the current_time more often than writing the video which is wrong 
-// one faulty fix is to set video_fps = 24 (which is how frequent the txt file has written itself
     
-            String data[] = read_audio_from_txt();
-            current_time = int(float(data[0]) * 1000);
-    
-            println(videoExport.getCurrentTime() + " : " + (float)current_time/1000 + (1/video_fps) * 0.5);
+            // the solution is to make sure current_time comes from the 
+            // video export, and then checks against the fft time stamps
+            // to move the fft forward, reference the correct one
 
-            if (videoExport.getCurrentTime() < (float)current_time/1000 + (1/video_fps) * 0.5) {
-                videoExport.saveFrame();
+            // videoExport as master, determines current_time
+            // add fft_time as global
+            // fft forward by reading next line from buffered reader
+            // which holds the fft data
+
+            if (current_time > fft_time) {
+                String data[] = read_audio_from_txt();
+                fft_time = int(float(data[0]) * 1000);
             }
-
+            current_time = int(videoExport.getCurrentTime()*1000);
+            println(current_time + " : " + fft_time);
+            videoExport.saveFrame();
         } else {
             current_time = millis() - millis_start;
         }

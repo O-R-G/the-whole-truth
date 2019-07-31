@@ -137,8 +137,8 @@ Boolean stop_sample() {
 }
 
 Boolean sync_sample() {
-    while (second() % 10 !=0) {  
-        println(second() % 10);
+    while (second() % 30 !=0) {  
+        println(second() % 30);
     }
     play_sample();
     // sample.amp(0.0);

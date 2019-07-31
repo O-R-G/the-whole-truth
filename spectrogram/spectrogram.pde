@@ -17,9 +17,13 @@
     for Lawrence Abu Hamdan, The Whole Truth
 */
 
-import ddf.minim.analysis.*;
+import com.hamoid.*;
 import ddf.minim.*;
+import ddf.minim.spi.*;
+import ddf.minim.analysis.*;
 
+VideoExport videoExport;
+BufferedReader reader;
 Minim minim;
 AudioInput in;
 AudioPlayer sample;
@@ -37,6 +41,7 @@ int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
+String file_name = "the-whole-truth-dev.wav";
 
 int[][] sgram;              // all spectrogram data
 int columns = 360;          // spectrogram width in pixels
@@ -46,16 +51,33 @@ float sampleRate = 48000;   // from the audio file
 int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
+int video_fps = 30;
+int audio_duration;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean debug = false;       // display time debug
-Boolean mute = false;       // no sound
+Boolean debug = true;      // display time debug
+Boolean mute = false;        // no sound
 Boolean sync = false;       // start audio w/sync_sample()
+Boolean video = false;       // export video
+Boolean render = true;      // render audio to txt, read txt, output video
 
 public void setup() {
     size(360, 640, FX2D);
+    pixelDensity(displayDensity());
+
     background(0);
     noStroke();
     colorMode(HSB);
+
+    if (render) {
+        // process audio to txt (non-realtime)
+        // see render.pde for detail
+        frameRate(1000);
+        render_audio_to_txt(data_path + file_name);
+        reader = createReader(data_path + file_name + ".txt");
+    } 
+
+    frameRate(30);      // render is sensitive to frameRate, txt file is at 30fps
+                        // this needs some thought
 
     sgram = new int[rows][columns];
 
@@ -64,8 +86,11 @@ public void setup() {
     counter = 0;
     pointer = 0;
 
+    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
+    textFont(mono);
+
     minim = new Minim(this);
-    sample = minim.loadFile(data_path + "the-whole-truth.wav", bufferSize);
+    sample = minim.loadFile(data_path + file_name, bufferSize);
     fft = new FFT(sample.bufferSize(), sampleRate);
     fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
     if (sync) 
@@ -73,8 +98,13 @@ public void setup() {
     else 
         play_sample();
 
-    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
-    textFont(mono);
+    if (video) {
+        audio_duration = round(sample.length());    // minim
+        videoExport = new VideoExport(this);
+        videoExport.setFrameRate(video_fps);
+        videoExport.setAudioFileName(data_path + file_name);
+        videoExport.startMovie();
+    }
 }
 
 public void draw() {
@@ -85,25 +115,38 @@ public void draw() {
         current_time = millis() - millis_start;
         freeze_fade();
         if (debug)
-            show_current_time(width-70, 24);
+            show_current_time(width-100, 24);
         if (pointer >= verdicts.length)
             exit();
+        if (video) {
+            videoExport.saveFrame();
+            if (frameCount > round(video_fps * audio_duration)) {
+                videoExport.endMovie();
+                exit();
+            }
+        }
+        if (render) {
+            // fps sensitive (?)
+            String data[] = read_audio_from_txt();
+            println(data[0]);
+        }
     }
     counter++;
 }
 
 public void freeze_fade() {
     // globals current_time, freeze_time
-    int fade_duration = 1000;       // duration in millis
+    int fade_duration = 3000;       // duration in millis
     int freeze_duration = 3000;     // duration in millis
 
     // freeze
     if (current_time >= verdicts[pointer].in) {
         background(0);
         draw_spectrogram();
-        show_capture_time(width-70, 44);
-        if (debug)
+        if (debug) {
+            show_capture_time(width-100, 44);
             timing_debug(10, 44);
+        }
         freeze_time = current_time;
         pointer++;
     }
@@ -111,7 +154,7 @@ public void freeze_fade() {
     if ((current_time >= freeze_time + freeze_duration) &&
         (current_time <= freeze_time + freeze_duration + fade_duration)) {
         noStroke();
-        fill(0,20);
+        fill(0,10);                 // speed via alpha
         rect(0,0,width,height);
     }
 }
@@ -130,7 +173,7 @@ private void show_current_millis() {
 private void show_current_time(int x, int y) {
     fill(0);
     noStroke();
-    rect(x-24,y-24,100,30);
+    rect(x-24,y-24,width,30);       // rectMode(CORNERS)
     fill(255/3,255,255);
     text(get_time(current_time),x,y);
 }
@@ -141,13 +184,16 @@ private void show_capture_time(int x, int y) {
 }
 
 private String get_time(int current_time) {
+    int milliseconds = current_time % 1000;
+    int frames = round(map(milliseconds, 0, 1000, 0, 30));
     int seconds = (current_time / 1000) % 60;
     int minutes = (current_time / (1000 * 60)) % 60;
-    return nf(minutes, 2) + ":" + nf(seconds, 2);
+    return nf(minutes, 2) + ":" + nf(seconds, 2) + "." + nf(frames, 2);
 }
 
 private void timing_debug(int x, int y) {
     text(verdicts[pointer].txt,x,y);
+    show_current_time(width-100, 24);
     saveFrame("out/debug-######.tif"); 
 }
 
@@ -354,8 +400,8 @@ Boolean pause_sample() {
 }
 
 Boolean sync_sample() {
-    while (second() % 10 !=0) {
-        println(second() % 10);
+    while (second() % 30 !=0) {
+        println(second() % 30);
     }
     play_sample();
     if (playing)
@@ -374,12 +420,3 @@ void stop() {
     minim.stop();
     super.stop();
 }
-
-/*
-void stop_exit() {
-    // stop() automatically runs on termination
-    // but minim wants to dispose object before
-    stop();
-    exit();
-}
-*/

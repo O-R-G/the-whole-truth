@@ -14,7 +14,9 @@
 */
 
 import processing.sound.*;
+import com.hamoid.*;
 
+VideoExport videoExport;
 SoundFile sample;
 PFont mono;
 Table table;
@@ -29,9 +31,12 @@ int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 int freeze_time = 0;        // current_time when freeze started
-Boolean debug = false;       // display time debug
-Boolean mute = true;        // no sound
-Boolean sync = true;        // start audio w/sync_sample()
+int video_fps = 30;
+int audio_duration;
+Boolean debug = true;      // display time debug
+Boolean mute = false;        // no sound
+Boolean sync = false;       // start audio w/sync_sample()
+Boolean video = true;       // export video
 
 public void setup() {
     size(640, 360);         // display_scale = 1
@@ -40,6 +45,7 @@ public void setup() {
     pixelDensity(displayDensity());
     background(0);
     noStroke();
+    frameRate(30);
 
     set_colors();
     load_csv();
@@ -56,6 +62,12 @@ public void setup() {
     textFont(mono);
     textAlign(CENTER, CENTER);
 
+    audio_duration = round(sample.duration());
+    videoExport = new VideoExport(this);
+    videoExport.setFrameRate(video_fps);
+    videoExport.setAudioFileName(data_path + "the_whole_truth.wav");
+    videoExport.startMovie();
+
     println("displayDensity : " + displayDensity());
     println("** ready **");
 }
@@ -64,24 +76,40 @@ public void draw() {
     if (playing) {
         current_time = millis() - millis_start;
         freeze_fade();
+        if (debug)    
+            show_current_time(width-100, 24);
+        /*
         if (pointer >= verdicts.length)
-            exit();        
+            exit();
+        */
+        videoExport.saveFrame();
+        if (frameCount > round(video_fps * audio_duration)) {
+            videoExport.endMovie();
+            exit();
+        }
     }
+
     counter++;
 }
 
 public void freeze_fade() {
     // globals current_time, freeze_time
     int fade_duration = 1000;       // duration in millis
-    int freeze_duration = 3000;     // duration in millis
+    int freeze_duration = 1000;     // duration in millis
+
+    // exceptions, hard-coded
+    if (freeze_time == 1083667) 
+        freeze_duration = 1087267 - 1083667;
+    if (freeze_time == 1092000) 
+        freeze_duration = 1098500 - 1092000;
 
     // freeze
     if (current_time >= verdicts[pointer].in) {
         background(0);      
         verdicts[pointer].display(int(width/2),int(height/2));
         if (debug) {
-            show_capture_time(width-70, 44);
-            timing_debug(10, 44);
+            show_capture_time(width-100, 44);
+            // timing_debug(10, 44);
         }
         freeze_time = current_time;
         pointer++;
@@ -90,7 +118,7 @@ public void freeze_fade() {
     if ((current_time >= freeze_time + freeze_duration) &&
         (current_time <= freeze_time + freeze_duration + fade_duration)) {
         noStroke();
-        fill(0,20);
+        fill(0);                    // speed via alpha
         rect(0,0,width,height);
     }
 }
@@ -103,16 +131,18 @@ public void freeze_fade() {
 
 private void show_current_millis() {
     fill(255);
+    textAlign(LEFT);
     text(millis(),width-100,24);
+    textAlign(CENTER, CENTER);
 }
 
 private void show_current_time(int x, int y) {
     fill(0);
     noStroke();
-    rect(x-24,y-24,100,30);
-    fill(255/3,255,255);
+    rect(x-24,y-24,width,30);
+    fill(255,0,0);
     textFont(mono, 16);
-    textAlign(LEFT, TOP);
+    textAlign(LEFT);
     text(get_time(current_time),x,y);
     textFont(mono);
     textAlign(CENTER, CENTER);
@@ -121,22 +151,25 @@ private void show_current_time(int x, int y) {
 private void show_capture_time(int x, int y) {
     fill(0,0,255);
     textFont(mono, 16);
-    textAlign(LEFT, TOP);
+    textAlign(LEFT);
     text(get_time(current_time),x,y);
     textFont(mono);
     textAlign(CENTER, CENTER);
 }
 
 private String get_time(int current_time) {
+    int milliseconds = current_time % 1000;
+    int frames = round(map(milliseconds, 0, 1000, 0, 30));
     int seconds = (current_time / 1000) % 60;
     int minutes = (current_time / (1000 * 60)) % 60;
-    return nf(minutes, 2) + ":" + nf(seconds, 2);
+    return nf(minutes, 2) + ":" + nf(seconds, 2) + "." + nf(frames, 2);
 }
 
 private void timing_debug(int x, int y) {
     textFont(mono, 16);
-    textAlign(LEFT, TOP);
+    textAlign(LEFT);
     text(verdicts[pointer].txt,x,y);
+    show_current_time(width-100, 24);
     saveFrame("out/debug-######.tif");
     textFont(mono);
     textAlign(CENTER, CENTER);
@@ -218,8 +251,8 @@ Boolean stop_sample() {
 }
 
 Boolean sync_sample() {
-    while (second() % 10 !=0) {
-        println(second() % 10);
+    while (second() % 30 !=0) {
+        println(second() % 30);
     }
     play_sample();        
     if (playing)
@@ -246,4 +279,3 @@ void keyPressed() {
             break;
     }
 }
-

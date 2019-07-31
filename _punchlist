@@ -1,3 +1,19 @@
+** _cmd **
+x mouse or keyboard events pass through between java apps?
++ or use internal computer clock or millis()
++ move data folder outside of sketch
+
+** spectrum **
++ implement timing coord
++ read from verdicts.csv
++ vertical orientation
++ crop freq distribution to most meaningful
++ snapshots at moments in time
++ display snapshots full, vertical
++ gradient blue to red vertical, use lerpColor
++ add current time in min, sec, frames and snapshot time
+  maybe in green? or red? led 7-segment?
+
 ** detector **
 + read from verdicts.csv
 + Verdict class based on Word from kings
@@ -11,26 +27,12 @@ x alternate type? helv, arial, menlo
 x adjust colors
 + verdict 3 seconds
 + no verdict = black
+- add render.pde
 
 ** waveform **
 x read from verdicts.csv    
 + implement timing coord
-
-** spectrum **
-+ implement timing coord
-+ read from verdicts.csv
-+ vertical orientation
-+ crop freq distribution to most meaningful
-+ snapshots at moments in time
-+ display snapshots full, vertical
-+ gradient blue to red vertical, use lerpColor
-+ add current time in min, sec, frames and snapshot time
-  maybe in green? or red? led 7-segment?
-
-** _cmd **
-x mouse or keyboard events pass through between java apps?
-+ or use internal computer clock or millis()
-+ move data folder outside of sketch
+- add render.pde    
 
 ** spectrogram ** 
 + merge with spectrum/ but keep both
@@ -41,5 +43,7 @@ x mouse or keyboard events pass through between java apps?
 + add black < 50, add white > 200 in rotate_hue()
 + freeze and fade after 3 secs
 x flash screen when snapshot flash_screen()
+- fix render_audio_to_txt() in render.pde (fft logic)
+- clean up use of Boolean render in spectrogram.pde
 
-* v3 due friday
+* v4 .mov (3) out asap

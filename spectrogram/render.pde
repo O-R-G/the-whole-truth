@@ -59,7 +59,8 @@ String[] read_audio_from_txt() {
     // data[0] is always time in seconds (float)            
 
     String line;
-    String[] data = new String[33];         // (= 33) fftSlices
+    // String[] data = new String[33];         // (= 33) fftSlices
+    String[] data = new String[1000];         // (= 33) fftSlices
                                             // ** should be dynamic **
 
     try {
@@ -72,7 +73,8 @@ String[] read_audio_from_txt() {
     if (line == null) {
         // Done reading the file.
         // Close the video file.
-        // videoExport.endMovie();
+        if (video) 
+            videoExport.endMovie();
         exit();
     } else
         data = split(line, SEP);
@@ -109,7 +111,7 @@ void render_audio_to_txt(String fileName) {
     Minim minim = new Minim(this);
     output = createWriter(dataPath(fileName + ".txt"));
 
-    AudioSample track = minim.loadSample(fileName, 1024); // 1024 = buffersize
+    AudioSample track = minim.loadSample(fileName, 2048); 
 
     int fftSize = 1024;
     float sampleRate = track.sampleRate();

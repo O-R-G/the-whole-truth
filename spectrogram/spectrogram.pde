@@ -51,13 +51,14 @@ float sampleRate = 48000;   // from the audio file
 int bufferSize = 1024;      // must be a power of 2 [512,1024,2048]
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
-int video_fps = 30;
+// int video_fps = 30;
+int video_fps = 23;         
 int audio_duration;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
 Boolean debug = true;      // display time debug
 Boolean mute = false;        // no sound
 Boolean sync = false;       // start audio w/sync_sample()
-Boolean video = false;       // export video
+Boolean video = true;       // export video
 Boolean render = true;      // render audio to txt, read txt, output video
 
 public void setup() {
@@ -74,9 +75,14 @@ public void setup() {
         frameRate(1000);
         render_audio_to_txt(data_path + file_name);
         reader = createReader(data_path + file_name + ".txt");
+        videoExport = new VideoExport(this);
+        videoExport.setFrameRate(video_fps);
+        videoExport.setAudioFileName(data_path + file_name);
+        videoExport.startMovie();
+        playing = true;
     } 
 
-    frameRate(30);      // render is sensitive to frameRate, txt file is at 30fps
+    // frameRate(30);      // render is sensitive to frameRate, txt file is at 30fps
                         // this needs some thought
 
     sgram = new int[rows][columns];
@@ -88,48 +94,63 @@ public void setup() {
 
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
-
-    minim = new Minim(this);
-    sample = minim.loadFile(data_path + file_name, bufferSize);
-    fft = new FFT(sample.bufferSize(), sampleRate);
-    fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
-    if (sync) 
-        sync_sample();
-    else 
-        play_sample();
-
-    if (video) {
-        audio_duration = round(sample.length());    // minim
-        videoExport = new VideoExport(this);
-        videoExport.setFrameRate(video_fps);
-        videoExport.setAudioFileName(data_path + file_name);
-        videoExport.startMovie();
-    }
+        
+        minim = new Minim(this);
+        sample = minim.loadFile(data_path + file_name, bufferSize);
+        fft = new FFT(sample.bufferSize(), sampleRate);
+        fft.window(FFT.HAMMING);    // tapered time window avoids 'splatter'
+        if (!render) {
+            if (sync) 
+                sync_sample();
+            else 
+                play_sample();
+        }
+        audio_duration = round(sample.length());    // may not need this
 }
 
 public void draw() {
 
-    fft.forward(sample.mix);    
-    update_spectrogram();
     if (playing) {
-        current_time = millis() - millis_start;
+        update_spectrogram();
+        if (render) {
+            // should be consolidated in one read_audio call
+            // also needs to use this insight:
+
+            // Our movie will have 30 frames per second.
+            // Our FFT analysis probably produces
+            // 43 rows per second (44100 / fftSize) or
+            // 46.875 rows per second (48000 / fftSize).
+            // We have two different data rates: 30fps vs 43rps.
+            // How to deal with that? We render frames as
+            // long as the movie time is less than the latest
+            // data (sound) time.
+            // I added an offset of half frame duration,
+            // but I'm not sure if it's useful nor what
+            // would be the ideal value. Please experiment :)
+
+            // ** this is the problem which makes the quicktime run at diff lengths **
+            // to be solved
+
+            // currently reading the current_time more often than writing the video which is wrong 
+// one faulty fix is to set video_fps = 24 (which is how frequent the txt file has written itself
+    
+            String data[] = read_audio_from_txt();
+            current_time = int(float(data[0]) * 1000);
+    
+            println(videoExport.getCurrentTime() + " : " + (float)current_time/1000 + (1/video_fps) * 0.5);
+
+            if (videoExport.getCurrentTime() < (float)current_time/1000 + (1/video_fps) * 0.5) {
+                videoExport.saveFrame();
+            }
+
+        } else {
+            current_time = millis() - millis_start;
+        }
         freeze_fade();
         if (debug)
             show_current_time(width-100, 24);
         if (pointer >= verdicts.length)
             exit();
-        if (video) {
-            videoExport.saveFrame();
-            if (frameCount > round(video_fps * audio_duration)) {
-                videoExport.endMovie();
-                exit();
-            }
-        }
-        if (render) {
-            // fps sensitive (?)
-            String data[] = read_audio_from_txt();
-            println(data[0]);
-        }
     }
     counter++;
 }
@@ -233,8 +254,21 @@ Boolean update_spectrogram() {
         .+....-.
     */
 
-    for (int i = 0; i < rows; i++)
-        sgram[i][column] = (int)Math.round(Math.max(0,2*20*Math.log10(1000*fft.getBand(i))));
+    // this would be better handled if passed, but global for now
+
+    if (render) {
+        // only 34 bands when rendering
+        // so % around that number [0-33]
+        String data[] = read_audio_from_txt();
+        for (int i = 1; i < rows; i++) {
+            // float value = float(data[i]);    // cast to float?
+            sgram[i][column] = int(data[i % 33]);
+        }
+    } else {            
+        fft.forward(sample.mix);
+        for (int i = 0; i < rows; i++)
+            sgram[i][column] = (int)Math.round(Math.max(0,2*20*Math.log10(1000*fft.getBand(i))));
+    }
     column++;
     if (column == columns)
         column = 0;

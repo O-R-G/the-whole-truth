@@ -109,10 +109,10 @@ public void draw() {
             current_time = int(videoExport.getCurrentTime()*1000);
             println(current_time);
             if (current_time >= audio_duration) {
+                println("End of audio, stopping video export.");
                 videoExport.endMovie();
                 exit();
             }
-            videoExport.saveFrame();        // move to end of draw() ?
         } else 
             current_time = millis() - millis_start;
         freeze_fade();
@@ -120,6 +120,8 @@ public void draw() {
             show_current_time(width-100, 24);
         if (pointer >= verdicts.length)
             exit();
+        if (video)
+            videoExport.saveFrame();
     }
     counter++;
 }

@@ -28,12 +28,14 @@ PFont mono;
 
 int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
+int amplitude_time = 0;     // position in datafile for rendering (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
 int display_scale = 2;      // adjust to match size()
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth.wav";
+String file_name = "the-whole-truth-dev.wav";
+String sketch_name = "waveform";
 
 float sample_rate = 48000;  // from the audio file
 int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
@@ -43,6 +45,7 @@ int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
                             // but the more accurate the time
 int samples = 102;          // how much of waveform to display
 int video_fps = 30;
+int audio_duration;
 Boolean debug = true;       // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
@@ -61,17 +64,29 @@ public void setup() {
     textFont(mono);
 
     if (render) {
-        // frameRate(1000);
+        frameRate(1000);
+        // frameRate(30);
         // int samples_stub = render_audio_amplitude_to_txt(data_path + file_name, buffer_size);
         // reader = createReader(data_path + file_name + ".txt");
+        minim = new Minim(this);
+        sample = minim.loadFile(data_path + file_name, buffer_size);
+        audio_duration = sample.length();
+        // sample.close();
+        // minim.stop();
+        // * temp * until render_audio_amplitude_to_text() works
+        if (sync)
+            sync_sample();
+        else
+            play_sample();
+        String[] file_name_split = split(file_name, '.');
+        String video_file_name = "out/" + file_name_split[0] + "-" + sketch_name + ".mp4";
         videoExport = new VideoExport(this);
         videoExport.setFrameRate(video_fps);
         videoExport.setAudioFileName(data_path + file_name);
-        videoExport.setMovieFileName("out/" + file_name + ".mp4");
+        videoExport.setMovieFileName(video_file_name);
         videoExport.startMovie();
-        // playing = true;      // temp ** fix **
-    } 
-    // else {
+        playing = true;      
+    } else {
         frameRate(30);
         minim = new Minim(this);
         sample = minim.loadFile(data_path + file_name, buffer_size);
@@ -79,7 +94,7 @@ public void setup() {
             sync_sample();
         else
             play_sample();
-    // }
+    }
 }
 
 public void draw() {
@@ -89,7 +104,6 @@ public void draw() {
     noFill();
 
     if (playing) {
-        /*
         if (render) {
             // movie will have 30 frames per second.
             // FFT analysis probably produces
@@ -110,20 +124,21 @@ public void draw() {
             // String data[] is local then these are independent
             // pointers to current line in the file.
 
-            if (current_time > fft_time) {
+            /*
+            if (current_time > amplitude_time) {
                 String data[] = read_audio_from_txt(bands, video);
-                fft_time = int(float(data[0]) * 1000);
+                amplitude_time = int(float(data[0]) * 1000);
             }
+            */
             current_time = int(videoExport.getCurrentTime()*1000);
-            // println(current_time + " : " + fft_time);
-            println(current_time);
-            videoExport.saveFrame();
-        } else {
+            println(current_time + " : " + amplitude_time);
+            if (current_time >= audio_duration) {
+                println("End of audio, stopping video export.");
+                videoExport.endMovie();
+                exit();
+            }
+        } else
             current_time = millis() - millis_start;
-        }
-        */
-
-        current_time = millis() - millis_start;
         beginShape();
         for(int i = 0; i < samples; i++){
             vertex(
@@ -134,13 +149,9 @@ public void draw() {
         endShape();
         if (debug)
             show_current_time(width-100, 24);
-
-        // ** fix ** temp before proper render is finished in render.pde
-        if (current_time >= sample.length()) {
-            videoExport.endMovie();
-            exit();
-        } else 
-            videoExport.saveFrame();
+        if (video)
+            videoExport.saveFrame();    // rm exit() in render.pde
+                                        // or leave as failsafe?
     }
     counter++;
 }
@@ -222,13 +233,9 @@ Boolean sync_sample() {
         return false;
 }
 
-void exit() {
-    stop();
-}
-
-void stop() {
+public void stop() {
     // always dispose minim object
-    sample.pause();
+    sample.close();
     minim.stop();
     super.stop();
 }

@@ -36,7 +36,7 @@ Verdict[] verdicts;
 
 int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
-int fft_time = 0;           // position in fft datafile for rendering (millis)
+int fft_time = 0;           // position in datafile for rendering (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
@@ -143,11 +143,10 @@ public void draw() {
             current_time = int(videoExport.getCurrentTime()*1000);
             println(current_time + " : " + fft_time);
             if (current_time >= audio_duration) {
+                println("End of audio, stopping video export.");
                 videoExport.endMovie();
                 exit();
             }
-            videoExport.saveFrame();        // move to end of draw() ?
-                                            // rm exit() in render.pde?
         } else 
             current_time = millis() - millis_start;
         freeze_fade();
@@ -155,6 +154,9 @@ public void draw() {
             show_current_time(width-100, 24);
         if (pointer >= verdicts.length)
             exit();
+        if (video)
+            videoExport.saveFrame();    // rm exit() in render.pde
+                                        // or leave as failsafe?
     }
     counter++;
 }
@@ -454,4 +456,3 @@ public void stop() {
     minim.stop();
     super.stop();
 }
-

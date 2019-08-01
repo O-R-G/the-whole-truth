@@ -42,7 +42,7 @@ int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth.wav";
+String file_name = "the-whole-truth-dev.wav";
 
 int[][] sgram;              // all spectrogram data
 int columns = 360;          // spectrogram display width in pixels
@@ -58,7 +58,7 @@ int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean debug = false;      // display time debug
+Boolean debug = true;       // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video
@@ -204,7 +204,7 @@ private String get_time(int current_time) {
 }
 
 private void timing_debug(int x, int y) {
-    text(verdicts[pointer].txt,x,y);
+    // text(verdicts[pointer].txt,x,y);
     show_current_time(width-100, 24);
     saveFrame("out/debug-######.tif"); 
 }

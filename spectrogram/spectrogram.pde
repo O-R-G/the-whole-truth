@@ -43,6 +43,7 @@ int display_scale = 2;      // adjust to match size()
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 String file_name = "the-whole-truth-dev.wav";
+String sketch_name = "spectrogram";
 
 int[][] sgram;              // all spectrogram data
 int columns = 360;          // spectrogram display width in pixels
@@ -57,6 +58,7 @@ int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
 int column;                 // current x position in spectrogram
 int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
+int audio_duration;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
 Boolean debug = true;       // display time debug
 Boolean mute = false;       // no sound
@@ -84,10 +86,17 @@ public void setup() {
         frameRate(1000);
         bands = render_audio_fft_to_txt(data_path + file_name, buffer_size);
         reader = createReader(data_path + file_name + ".txt");
+        minim = new Minim(this);
+        sample = minim.loadFile(data_path + file_name, buffer_size);
+        audio_duration = sample.length();
+        sample.close();
+        minim.stop();
+        String[] file_name_split = split(file_name, '.');
+        String video_file_name = "out/" + file_name_split[0] + "-" + sketch_name + ".mp4";
         videoExport = new VideoExport(this);
         videoExport.setFrameRate(video_fps);
         videoExport.setAudioFileName(data_path + file_name);
-        videoExport.setMovieFileName("out/" + file_name + ".mp4");
+        videoExport.setMovieFileName(video_file_name);
         videoExport.startMovie();
         playing = true;
     } else {
@@ -133,10 +142,14 @@ public void draw() {
             }
             current_time = int(videoExport.getCurrentTime()*1000);
             println(current_time + " : " + fft_time);
-            videoExport.saveFrame();
-        } else {
+            if (current_time >= audio_duration) {
+                videoExport.endMovie();
+                exit();
+            }
+            videoExport.saveFrame();        // move to end of draw() ?
+                                            // rm exit() in render.pde?
+        } else 
             current_time = millis() - millis_start;
-        }
         freeze_fade();
         if (debug)
             show_current_time(width-100, 24);
@@ -435,13 +448,10 @@ Boolean sync_sample() {
         return false;
 }
 
-void exit() {
-    stop();
-}
-
-void stop() {
+public void stop() {
     // always dispose minim object
-    sample.pause();
+    sample.close();
     minim.stop();
     super.stop();
 }
+

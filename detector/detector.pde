@@ -36,6 +36,7 @@ int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 String file_name = "the-whole-truth-dev.wav";
+String sketch_name = "detector";
 
 float sample_rate = 48000;  // from the audio file
 int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
@@ -70,17 +71,21 @@ public void setup() {
     textAlign(CENTER, CENTER);
 
     if (render) {
-        // frameRate(1000);
-        // bands = render_audio_fft_to_txt(data_path + file_name, buffer_size);
-        // reader = createReader(data_path + file_name + ".txt");
+        frameRate(1000);
+        minim = new Minim(this);
+        sample = minim.loadFile(data_path + file_name, buffer_size);
+        audio_duration = sample.length();
+        sample.close();
+        minim.stop();
+        String[] file_name_split = split(file_name, '.');
+        String video_file_name = "out/" + file_name_split[0] + "-" + sketch_name + ".mp4";
         videoExport = new VideoExport(this);
         videoExport.setFrameRate(video_fps);
         videoExport.setAudioFileName(data_path + file_name);
-        videoExport.setMovieFileName("out/" + file_name + ".mp4");
+        videoExport.setMovieFileName(video_file_name);
         videoExport.startMovie();
-        // playing = true;      // temp ** fix **
-    }
-    // else {
+        playing = true;
+    } else {
         frameRate(30);
         minim = new Minim(this);
         sample = minim.loadFile(data_path + file_name, buffer_size);
@@ -88,61 +93,33 @@ public void setup() {
             sync_sample();
         else
             play_sample();
-    // }
+    }
 }
 
 public void draw() {
 
     if (playing) {
-        /*
         if (render) {
-            // movie will have 30 frames per second.
-            // FFT analysis probably produces
-            // 43 rows per second (44100 / fftSize) or
-            // 46.875 rows per second (48000 / fftSize).
-            // we have two different data rates: 30fps vs 43rps.
-            // how to deal with that? We render frames as
-            // long as the movie time is less than the latest
-            // data (sound) time.
+            // for non-realtime render, use videoExport 
+            // as the master clock (current_time)
+            // and dont play audio, which is added after
+            // only requires audio_duration to end
+            // movie will have 30 frames per second
 
-            // solution is to make sure current_time comes from the
-            // video export, and then checks against the fft time stamps
-            // to move the fft forward, reference the correct one.
-            // videoExport is the master, determines current_time
-            // fft forward by reading next line from buffered reader
-            // which holds the fft data. also reads from txt file
-            // in update_spectrogram() but since in both places
-            // String data[] is local then these are independent
-            // pointers to current line in the file.
-
-            if (current_time > fft_time) {
-                String data[] = read_audio_from_txt(bands, video);
-                fft_time = int(float(data[0]) * 1000);
-            }
             current_time = int(videoExport.getCurrentTime()*1000);
-            // println(current_time + " : " + fft_time);
             println(current_time);
-            videoExport.saveFrame();
-        } else {
+            if (current_time >= audio_duration) {
+                videoExport.endMovie();
+                exit();
+            }
+            videoExport.saveFrame();        // move to end of draw() ?
+        } else 
             current_time = millis() - millis_start;
-        }
-        */
-
-        current_time = millis() - millis_start;
         freeze_fade();
         if (debug)
             show_current_time(width-100, 24);
-        /*
         if (pointer >= verdicts.length)
             exit();
-        */
-
-        // ** fix ** temp before proper render is finished in render.pde
-        if (current_time >= sample.length()) {
-            videoExport.endMovie();
-            exit();
-        } else
-            videoExport.saveFrame();
     }
     counter++;
 }
@@ -317,32 +294,9 @@ Boolean sync_sample() {
         return false;
 }
 
-void exit() {
-    stop();
-}
-
-void stop() {
+public void stop() {
     // always dispose minim object
-    sample.pause();
+    sample.close();
     minim.stop();
     super.stop();
-}
-
-/*
-
-    interaction
-
-*/
-
-void keyPressed() {
-    switch(key) {
-        case ' ':
-            if (!playing)
-                play_sample();
-            else
-                pause_sample();
-            break;
-        default:
-            break;
-    }
 }

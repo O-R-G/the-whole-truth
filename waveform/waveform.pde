@@ -64,8 +64,8 @@ public void setup() {
     textFont(mono);
 
     if (render) {
-        frameRate(1000);
-        // frameRate(30);
+        // frameRate(1000);
+        frameRate(30);
         // int samples_stub = render_audio_amplitude_to_txt(data_path + file_name, buffer_size);
         // reader = createReader(data_path + file_name + ".txt");
         minim = new Minim(this);

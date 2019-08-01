@@ -22,7 +22,6 @@ import ddf.minim.analysis.*;
 VideoExport videoExport;
 BufferedReader reader;
 Minim minim;
-AudioInput in;
 AudioPlayer sample;
 FFT fft;
 PFont mono;
@@ -70,10 +69,9 @@ public void setup() {
         videoExport.setAudioFileName(data_path + file_name);
         videoExport.setMovieFileName("out/" + file_name + ".mp4");
         videoExport.startMovie();
-        // temp ** fix **
-        // playing = true;
-    // } else {
-    }
+        // playing = true;      // temp ** fix **
+    } 
+    // else {
         frameRate(30);
         minim = new Minim(this);
         sample = minim.loadFile(data_path + file_name, buffer_size);
@@ -126,7 +124,6 @@ public void draw() {
         */
 
         current_time = millis() - millis_start;
-
         beginShape();
         for(int i = 0; i < samples; i++){
             vertex(
@@ -139,7 +136,6 @@ public void draw() {
             show_current_time(width-100, 24);
 
         // ** fix ** temp before proper render is finished in render.pde
-        // exit mechanism should be in the reading file
         if (current_time >= sample.length()) {
             videoExport.endMovie();
             exit();

@@ -13,11 +13,16 @@
     for Lawrence Abu Hamdan, The Whole Truth
 */
 
-import processing.sound.*;
 import com.hamoid.*;
+import ddf.minim.*;
+import ddf.minim.spi.*;
+import ddf.minim.analysis.*;
 
 VideoExport videoExport;
-SoundFile sample;
+BufferedReader reader;
+Minim minim;
+AudioInput in;
+AudioPlayer sample;
 PFont mono;
 Table table;
 StringDict colors;
@@ -30,65 +35,115 @@ int counter;                // draw loop
 int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
+String file_name = "the-whole-truth-dev.wav";
+
+float sample_rate = 48000;  // from the audio file
+int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
+                            // the larger the buffer, the more fft bands
+                            // and the less accurate the time
+                            // the smaller, the fewer bands (freq resolution)
+                            // but the more accurate the time
 int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
 int audio_duration;
-Boolean debug = true;      // display time debug
-Boolean mute = false;        // no sound
+Boolean debug = true;       // display time debug
+Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
-Boolean video = true;       // export video
+Boolean render = true;      // render audio to txt, read txt, output video
+Boolean video = true;       // export video when rendering
 
 public void setup() {
-    size(640, 360);         // display_scale = 1
-    // size(1280, 720);     // display_scale = 2
-    // size(1920, 1080);    // display_scale = 3
+    size(640, 360);
     pixelDensity(displayDensity());
     background(0);
     noStroke();
-    frameRate(30);
+    counter = 0;
+    pointer = 0;
 
     set_colors();
     load_csv();
     counter = 0;
     pointer = 0;
 
-    sample = new SoundFile(this, data_path + "the-whole-truth.wav");
-    if (sync)
-        sync_sample();
-    else
-        play_sample();
-
     mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 48 * display_scale);
     textFont(mono);
     textAlign(CENTER, CENTER);
 
-    audio_duration = round(sample.duration());
-    videoExport = new VideoExport(this);
-    videoExport.setFrameRate(video_fps);
-    videoExport.setAudioFileName(data_path + "the_whole_truth.wav");
-    videoExport.startMovie();
-
-    println("displayDensity : " + displayDensity());
-    println("** ready **");
+    if (render) {
+        // frameRate(1000);
+        // bands = render_audio_fft_to_txt(data_path + file_name, buffer_size);
+        // reader = createReader(data_path + file_name + ".txt");
+        videoExport = new VideoExport(this);
+        videoExport.setFrameRate(video_fps);
+        videoExport.setAudioFileName(data_path + file_name);
+        videoExport.setMovieFileName("out/" + file_name + ".mp4");
+        videoExport.startMovie();
+        // playing = true;      // temp ** fix **
+    }
+    // else {
+        frameRate(30);
+        minim = new Minim(this);
+        sample = minim.loadFile(data_path + file_name, buffer_size);
+        if (sync)
+            sync_sample();
+        else
+            play_sample();
+    // }
 }
 
 public void draw() {
+
     if (playing) {
+        /*
+        if (render) {
+            // movie will have 30 frames per second.
+            // FFT analysis probably produces
+            // 43 rows per second (44100 / fftSize) or
+            // 46.875 rows per second (48000 / fftSize).
+            // we have two different data rates: 30fps vs 43rps.
+            // how to deal with that? We render frames as
+            // long as the movie time is less than the latest
+            // data (sound) time.
+
+            // solution is to make sure current_time comes from the
+            // video export, and then checks against the fft time stamps
+            // to move the fft forward, reference the correct one.
+            // videoExport is the master, determines current_time
+            // fft forward by reading next line from buffered reader
+            // which holds the fft data. also reads from txt file
+            // in update_spectrogram() but since in both places
+            // String data[] is local then these are independent
+            // pointers to current line in the file.
+
+            if (current_time > fft_time) {
+                String data[] = read_audio_from_txt(bands, video);
+                fft_time = int(float(data[0]) * 1000);
+            }
+            current_time = int(videoExport.getCurrentTime()*1000);
+            // println(current_time + " : " + fft_time);
+            println(current_time);
+            videoExport.saveFrame();
+        } else {
+            current_time = millis() - millis_start;
+        }
+        */
+
         current_time = millis() - millis_start;
         freeze_fade();
-        if (debug)    
+        if (debug)
             show_current_time(width-100, 24);
         /*
         if (pointer >= verdicts.length)
             exit();
         */
-        videoExport.saveFrame();
-        if (frameCount > round(video_fps * audio_duration)) {
+
+        // ** fix ** temp before proper render is finished in render.pde
+        if (current_time >= sample.length()) {
             videoExport.endMovie();
             exit();
-        }
+        } else
+            videoExport.saveFrame();
     }
-
     counter++;
 }
 
@@ -223,6 +278,7 @@ Boolean set_colors() {
     return true;
 }
 
+
 /*
 
     sound control
@@ -232,11 +288,11 @@ Boolean set_colors() {
 Boolean play_sample() {
     if (!playing) {
         millis_start = millis();
-        sample.play();      
+        sample.play();
         if (mute)
-            sample.amp(0.0);
-        else    
-            sample.amp(1.0);
+            sample.mute();
+        else
+            sample.unmute();
         playing = true;
         return true;
     } else {
@@ -244,9 +300,9 @@ Boolean play_sample() {
     }
 }
 
-Boolean stop_sample() {
+Boolean pause_sample() {
     playing = false;
-    sample.stop();
+    sample.pause();
     return true;
 }
 
@@ -254,11 +310,22 @@ Boolean sync_sample() {
     while (second() % 30 !=0) {
         println(second() % 30);
     }
-    play_sample();        
+    play_sample();
     if (playing)
         return true;
-    else 
+    else
         return false;
+}
+
+void exit() {
+    stop();
+}
+
+void stop() {
+    // always dispose minim object
+    sample.pause();
+    minim.stop();
+    super.stop();
 }
 
 /*
@@ -273,7 +340,7 @@ void keyPressed() {
             if (!playing)
                 play_sample();
             else
-                stop_sample();
+                pause_sample();
             break;
         default:
             break;

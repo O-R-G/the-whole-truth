@@ -101,6 +101,9 @@ int render_audio_fft_to_txt(String file_name, int buffer_size) {
     return bands;   
 }
 
+
+// this is * CLOSE * but not yet working
+// it stalls out on something like 12.376 time stamp
 int render_audio_amplitude_to_txt(String file_name, int buffer_size) {
 
     // minim based audio amplitude to data text file conversion.
@@ -139,10 +142,9 @@ int render_audio_amplitude_to_txt(String file_name, int buffer_size) {
     minim.stop();
     output.flush();
     output.close();
-    println(bands + " bands");
-    println(bands + " bands");
+    println(total_chunks + " samples");
     println("Amplitude done.");
-    return bands;   
+    return total_chunks;   // really should be samples_number
 }
 
 String[] read_audio_from_txt(int bands, Boolean video) {

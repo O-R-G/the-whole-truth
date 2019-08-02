@@ -28,17 +28,17 @@ x adjust colors
 + verdict 3 seconds
 + no verdict = black
 x add render.pde
-- add render functionality (maybe still render.pde)
+x add render functionality (maybe still render.pde)
 + exit minim gracefully .close() super.stop(); public
-- videoExport filename spec (.pde file name?)
-- add sketch_name to video filename
++ videoExport filename spec (.pde file name?)
++ add sketch_name to video filename
 
 ** waveform **
 x read from verdicts.csv    
 + implement timing coord
 / add render.pde    
-- exit minim gracefully .close() super.stop(); public
-- add sketch_name to video filename
++ exit minim gracefully .close() super.stop(); public
++ add sketch_name to video filename
 
 ** spectrogram ** 
 + merge with spectrum/ but keep both
@@ -51,7 +51,11 @@ x read from verdicts.csv
 x flash screen when snapshot flash_screen()
 + fix render_audio_to_txt() in render.pde (fft logic) 
 + clean up use of Boolean render in spectrogram.pde
-- exit minim gracefully .close() super.stop(); public
-- add sketch_name to video filename
++ exit minim gracefully .close() super.stop(); public
++ add sketch_name to video filename
+- fix fade time
+- fix fade logic
+
+- add generic render facility (such as for detector) in rende.pde
 
 * v4 .mov (3) out asap

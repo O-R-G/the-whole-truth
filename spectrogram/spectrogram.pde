@@ -42,7 +42,7 @@ int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth-dev.wav";
+String file_name = "the-whole-truth.wav";
 String sketch_name = "spectrogram";
 
 int[][] sgram;              // all spectrogram data
@@ -164,7 +164,7 @@ public void draw() {
 public void freeze_fade() {
     // globals current_time, freeze_time
     int fade_duration = 3000;       // duration in millis
-    int freeze_duration = 3000;     // duration in millis
+    int freeze_duration = 1000;     // duration in millis
 
     // freeze
     if (current_time >= verdicts[pointer].in) {
@@ -221,7 +221,7 @@ private String get_time(int current_time) {
 private void timing_debug(int x, int y) {
     // text(verdicts[pointer].txt,x,y);
     show_current_time(width-100, 24);
-    saveFrame("out/debug-######.tif"); 
+    // saveFrame("out/debug-######.tif"); 
 }
 
 /* 

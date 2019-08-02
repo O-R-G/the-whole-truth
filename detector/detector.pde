@@ -128,7 +128,7 @@ public void draw() {
 
 public void freeze_fade() {
     // globals current_time, freeze_time
-    int fade_duration = 1000;       // duration in millis
+    int fade_duration = 1;          // duration in millis
     int freeze_duration = 1000;     // duration in millis
 
     // exceptions, hard-coded

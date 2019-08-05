@@ -128,7 +128,7 @@ public void draw() {
 
 public void freeze_fade() {
     // globals current_time, freeze_time
-    int fade_duration = 3000;          // duration in millis
+    int fade_duration = 0;          // duration in millis
     int freeze_duration = 1000;     // duration in millis
 
     // exceptions, hard-coded
@@ -152,8 +152,8 @@ public void freeze_fade() {
     if ((current_time >= freeze_time + freeze_duration) &&
         (current_time <= freeze_time + freeze_duration + fade_duration)) {
         noStroke();
-        // fill(0);                    // speed via alpha
-        fill(0,10);                    // speed via alpha
+        fill(0);                    // speed via alpha
+        // fill(0,10);                    // speed via alpha
         rect(0,0,width,height);
     }
 }

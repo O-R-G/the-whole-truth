@@ -140,7 +140,7 @@ public void draw() {
         } else
             current_time = millis() - millis_start;
         beginShape();
-        for(int i = 0; i < samples; i++){
+        for(int i = 0; i <= samples; i++){
             vertex(
                 map(i, 0, samples, 0, width),
                 map(sample.left.get(i), -1, 1, 0, height)

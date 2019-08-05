@@ -32,7 +32,10 @@ x add render functionality (maybe still render.pde)
 + exit minim gracefully .close() super.stop(); public
 + videoExport filename spec (.pde file name?)
 + add sketch_name to video filename
-- work out fade logic when cues overlap
+x work out fade logic when cues overlap
+x fix fade logic to go to 100% black
+- add generic render facility (such as for detector) in render.pde
+  this would include adding all video export logic there
 
 ** waveform **
 x read from verdicts.csv    
@@ -40,7 +43,10 @@ x read from verdicts.csv
 / add render.pde    
 + exit minim gracefully .close() super.stop(); public
 + add sketch_name to video filename
-- wave to go to right edge of frame
++ wave to right edge of frame
+- debug render
+- add generic render facility (such as for detector) in render.pde
+  this would include adding all video export logic there
 
 ** spectrogram ** 
 + merge with spectrum/ but keep both
@@ -55,10 +61,9 @@ x flash screen when snapshot flash_screen()
 + clean up use of Boolean render in spectrogram.pde
 + exit minim gracefully .close() super.stop(); public
 + add sketch_name to video filename
-- fix fade time
-- fix fade logic
-
-- all fades should go to 100% black
-- add generic render facility (such as for detector) in rende.pde
++ fix fade time
++ add show_verdict() to display verdict
+- fix fade logic to go to 100% black
 
 * v4 .mov (3) out asap
+* v5 final due

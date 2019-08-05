@@ -60,7 +60,7 @@ int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
 int audio_duration;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean debug = true;       // display time debug
+Boolean debug = false;       // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video
@@ -163,7 +163,7 @@ public void draw() {
 
 public void freeze_fade() {
     // globals current_time, freeze_time
-    int fade_duration = 3000;       // duration in millis
+    int fade_duration = 0;          // duration in millis
     int freeze_duration = 1000;     // duration in millis
 
     // freeze
@@ -171,9 +171,10 @@ public void freeze_fade() {
         background(0);
         draw_spectrogram();
         if (debug) {
-            show_capture_time(width-100, 44);
+            // show_capture_time(width-100, 44);
             timing_debug(10, 44);
         }
+        show_verdict(10,24);
         freeze_time = current_time;
         pointer++;
     }
@@ -222,6 +223,11 @@ private void timing_debug(int x, int y) {
     // text(verdicts[pointer].txt,x,y);
     show_current_time(width-100, 24);
     // saveFrame("out/debug-######.tif"); 
+}
+
+private void show_verdict(int x, int y) {
+    fill(255);
+    text(verdicts[pointer].txt,x,y);
 }
 
 /* 

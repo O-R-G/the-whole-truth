@@ -35,7 +35,7 @@ int counter;                // draw loop
 int display_scale = 1;      // adjust to match size() [1,2,3]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth-dev.wav";
+String file_name = "the-whole-truth.wav";
 String sketch_name = "detector";
 
 float sample_rate = 48000;  // from the audio file
@@ -47,7 +47,7 @@ int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
 int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
 int audio_duration;
-Boolean debug = true;       // display time debug
+Boolean debug = false;      // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video
@@ -217,7 +217,7 @@ private void timing_debug(int x, int y) {
 */
 
 void load_csv() {
-    table = loadTable(data_path + "verdicts-dev.csv", "header");
+    table = loadTable(data_path + "verdicts.csv", "header");
     verdicts = new Verdict[table.getRowCount()];
 
     for (int i = 0; i < table.getRowCount(); i++) {

@@ -42,7 +42,7 @@ int counter;                // draw loop
 int display_scale = 2;      // adjust to match size() 
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth.wav";
+String file_name = "the-whole-truth-dev.wav";
 String sketch_name = "spectrogram";
 
 int[][] sgram;              // all spectrogram data
@@ -371,7 +371,7 @@ void draw_grid() {
 */
 
 void load_csv() {
-    table = loadTable(data_path + "verdicts.csv", "header");
+    table = loadTable(data_path + "verdicts-dev.csv", "header");
     verdicts = new Verdict[table.getRowCount()];
 
     for (int i = 0; i < table.getRowCount(); i++) {

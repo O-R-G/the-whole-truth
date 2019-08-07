@@ -64,6 +64,9 @@ x flash screen when snapshot flash_screen()
 + fix fade time
 + add show_verdict() to display verdict
 - fix fade logic to go to 100% black
+- map y values in spectrogram to cover screen
+- see how it works in draw() as just waits until next, then updates
+  or could use a map() to shift values
 
 * v4 .mov (3) out asap
 * v5 final due

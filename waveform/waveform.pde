@@ -46,7 +46,7 @@ int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
 int samples = 102;          // how much of waveform to display
 int video_fps = 30;
 int audio_duration;
-Boolean debug = true;       // display time debug
+Boolean debug = false;      // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video

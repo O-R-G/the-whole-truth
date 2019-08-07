@@ -39,10 +39,10 @@ int current_time = 0;       // position in soundfile (millis)
 int fft_time = 0;           // position in datafile for rendering (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
-int display_scale = 2;      // adjust to match size() 
+float display_scale = 1.0;  // adjust to match size() [1,1.5]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth.wav";
+String file_name = "the-whole-truth-dev.wav";
 String sketch_name = "spectrogram";
 
 int[][] sgram;              // all spectrogram data
@@ -60,14 +60,16 @@ int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
 int audio_duration;
 Boolean snap_shots = true;  // show only timed stills, otherwise scrolling
-Boolean debug = false;       // display time debug
+Boolean debug = false;      // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video
 Boolean video = true;       // export video when rendering
 
 public void setup() {
-    size(360, 640, FX2D);
+    size(180, 360, FX2D);    // display_scale = 0.5 (720p @2x))
+    // size(360, 640, FX2D);       // display_scale = 1.0 (720p @2x))
+    // size(540, 960, FX2D);    // display_scale = 1.5 (1080p @2x)
     pixelDensity(displayDensity());
     background(0);
     noStroke();
@@ -77,7 +79,7 @@ public void setup() {
     counter = 0;
     pointer = 0;
 
-    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
+    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16 * display_scale);
     textFont(mono);
 
     sgram = new int[rows][columns];
@@ -170,13 +172,13 @@ public void freeze_fade() {
     if (current_time >= verdicts[pointer].in) {
         background(0);
         draw_spectrogram();
+        show_verdict(10,24);
+        freeze_time = current_time;
+        pointer++;
         if (debug) {
             // show_capture_time(width-100, 44);
             timing_debug(10, 44);
         }
-        show_verdict(10,24);
-        freeze_time = current_time;
-        pointer++;
     }
     // fade
     if ((current_time >= freeze_time + freeze_duration) &&
@@ -209,6 +211,12 @@ private void show_current_time(int x, int y) {
 private void show_capture_time(int x, int y) {
     fill(0,0,255);
     text(get_time(current_time),x,y);
+}
+
+private void show_freeze_time_duration(int freeze_duration, int x, int y) {
+    fill(255,0,0);
+    text(get_time(freeze_time),x,y);
+    text(get_time(freeze_duration),x,y+20);
 }
 
 private String get_time(int current_time) {

@@ -32,7 +32,7 @@ int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
-int display_scale = 1;      // adjust to match size() [1,2,3]
+float display_scale = 1.5   // adjust to match size() [1,1.5]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 String file_name = "the-whole-truth.wav";
@@ -47,14 +47,16 @@ int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
 int freeze_time = 0;        // current_time when freeze started
 int video_fps = 30;
 int audio_duration;
-Boolean debug = false;      // display time debug
+Boolean debug = true;       // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video
 Boolean video = true;       // export video when rendering
 
 public void setup() {
-    size(640, 360);
+    // size(360, 180);      // display_scale = 0.5 (720p @2x))
+    // size(640, 360);         // display_scale = 1.0 (720p @2x))
+    size(960, 540);      // display_scale = 1.5 (1080p @2x)
     pixelDensity(displayDensity());
     background(0);
     noStroke();
@@ -128,11 +130,12 @@ public void draw() {
 
 public void freeze_fade() {
     // globals current_time, freeze_time
-    int fade_duration = 0;          // duration in millis
+    int fade_duration = 1;          // duration in millis
     int freeze_duration = 1000;     // duration in millis
 
     // exceptions, hard-coded
-    if (freeze_time == 1083667) 
+    // must be rounded to nearest frame
+    if (freeze_time == 1083700) 
         freeze_duration = 1087267 - 1083667;
     if (freeze_time == 1092000) 
         freeze_duration = 1098500 - 1092000;
@@ -141,19 +144,19 @@ public void freeze_fade() {
     if (current_time >= verdicts[pointer].in) {
         background(0);      
         verdicts[pointer].display(int(width/2),int(height/2));
-        if (debug) {
-            show_capture_time(width-100, 44);
-            // timing_debug(10, 44);
-        }
         freeze_time = current_time;
         pointer++;
+        if (debug) {
+            show_capture_time(width-100, 44);
+            show_freeze_time_duration(freeze_duration, width-100, 64);
+            // timing_debug(10, 44);
+        }
     }
     // fade
     if ((current_time >= freeze_time + freeze_duration) &&
         (current_time <= freeze_time + freeze_duration + fade_duration)) {
         noStroke();
         fill(0);                    // speed via alpha
-        // fill(0,10);                    // speed via alpha
         rect(0,0,width,height);
     }
 }
@@ -188,6 +191,16 @@ private void show_capture_time(int x, int y) {
     textFont(mono, 16);
     textAlign(LEFT);
     text(get_time(current_time),x,y);
+    textFont(mono);
+    textAlign(CENTER, CENTER);
+}
+
+private void show_freeze_time_duration(int freeze_duration, int x, int y) {
+    fill(255,0,0);
+    textFont(mono, 16);
+    textAlign(LEFT);
+    text(get_time(freeze_time),x,y);
+    text(get_time(freeze_duration),x,y+20);
     textFont(mono);
     textAlign(CENTER, CENTER);
 }

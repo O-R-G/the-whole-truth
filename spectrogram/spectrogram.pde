@@ -42,7 +42,7 @@ int counter;                // draw loop
 float display_scale = 1.5;  // adjust to match size() [0.5,1.0,1.5]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth-dev.wav";
+String file_name = "the-whole-truth.wav";
 String sketch_name = "spectrogram";
 
 int[][] sgram;              // all spectrogram data

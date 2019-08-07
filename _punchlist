@@ -63,10 +63,10 @@ x flash screen when snapshot flash_screen()
 + add sketch_name to video filename
 + fix fade time
 + add show_verdict() to display verdict
-- fix fade logic to go to 100% black
-- map y values in spectrogram to cover screen
-- see how it works in draw() as just waits until next, then updates
-  or could use a map() to shift values
+x fix fade logic to go to 100% black
++ map y values in spectrogram to cover screen
++ implement scale in draw_spectrogram
++ use a map() to shift values in update_spectrogram
 
 * v4 .mov (3) out asap
 * v5 final due

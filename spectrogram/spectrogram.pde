@@ -39,7 +39,7 @@ int current_time = 0;       // position in soundfile (millis)
 int fft_time = 0;           // position in datafile for rendering (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
-float display_scale = 1.0;  // adjust to match size() [1,1.5]
+float display_scale = 1.5;  // adjust to match size() [0.5,1.0,1.5]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 String file_name = "the-whole-truth-dev.wav";
@@ -67,9 +67,9 @@ Boolean render = true;      // render audio to txt, read txt, output video
 Boolean video = true;       // export video when rendering
 
 public void setup() {
-    size(180, 360, FX2D);    // display_scale = 0.5 (720p @2x))
-    // size(360, 640, FX2D);       // display_scale = 1.0 (720p @2x))
-    // size(540, 960, FX2D);    // display_scale = 1.5 (1080p @2x)
+    // size(180, 320, FX2D);    // display_scale = 0.5 (360p @2x))
+    // size(360, 640, FX2D);    // display_scale = 1.0 (720p @2x))
+    size(540, 960, FX2D);       // display_scale = 1.5 (1080p @2x)
     pixelDensity(displayDensity());
     background(0);
     noStroke();
@@ -79,7 +79,7 @@ public void setup() {
     counter = 0;
     pointer = 0;
 
-    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16 * display_scale);
+    mono = createFont(data_path + "fonts/Speech-to-text-normal.ttf", 16);
     textFont(mono);
 
     sgram = new int[rows][columns];
@@ -111,6 +111,7 @@ public void setup() {
             sync_sample();
         else 
             play_sample();
+        bands = fft.specSize();
     }
 }
 
@@ -143,7 +144,7 @@ public void draw() {
                 fft_time = int(float(data[0]) * 1000);
             }
             current_time = int(videoExport.getCurrentTime()*1000);
-            println(current_time + " : " + fft_time);
+            // println(current_time + " : " + fft_time);
             if (current_time >= audio_duration) {
                 println("End of audio, stopping video export.");
                 videoExport.endMovie();
@@ -274,20 +275,37 @@ Boolean update_spectrogram() {
         .+....-.
     */
 
+    int bands_index = 0;
+    int bands_index_as_row = 0;
+
+    // bands and rows are different values, bands is smaller
+    // need to scale bands_index to correlate to rows
+    // then repeats rows as necc to full out sgram[rows][columns]
+    // bands_index points to where in bands[] for current row
+
     if (render) {
         float band = 0.0;
-        String data[] = read_audio_from_txt(bands, video);
-        for (int i = 1; i < rows; i++) {
-            if (i < bands) 
-                band = float(data[i]);
-            else 
-                band = band;    // if out of range, fill rows with final value
-            sgram[i][column] = (int)Math.round(Math.max(0,2*20*Math.log10(1000*band)));
+        String data[] = read_audio_from_txt(bands, video);    
+        // first value (row) is always the time for that spectrum
+        // following values (rows) are frequency bands in spectrum
+        // therfore row starts at 1
+        for (int row = 1; row < rows; row++) {
+            band = float(data[bands_index]);
+            sgram[row][column] = (int)Math.round(Math.max(0,2*20*Math.log10(1000*band)));
+            bands_index_as_row = int(map(bands_index, 0, bands, 1, rows));
+            if (row == bands_index_as_row)
+                bands_index++;
         }
-    } else {            
+    } else {
         fft.forward(sample.mix);
-        for (int i = 0; i < rows; i++)
-            sgram[i][column] = (int)Math.round(Math.max(0,2*20*Math.log10(1000*fft.getBand(i))));
+        // analyzing live audio so time is current_time
+        // therefore row starts at 0
+        for (int row = 0; row < rows; row++) {
+            sgram[row][column] = (int)Math.round(Math.max(0,2*20*Math.log10(1000*fft.getBand(bands_index))));
+            bands_index_as_row = int(map(bands_index, 0, bands, 0, rows));
+            if (row == bands_index_as_row)
+                bands_index++;
+        }
     }
     column++;
     if (column == columns)
@@ -298,19 +316,24 @@ Boolean update_spectrogram() {
 
 Boolean draw_spectrogram() {
 
-    // draw sgram[column][] to sgram[columns][]
-    // then draw sgram[0][] to sgram[column][]
+    // column is current x position in sgram
+    // draws from left to right, bottom to top
+    // starting at column in two passes:
+    // 1. draw sgram[column][] to sgram[columns][]
+    // 2. then draw sgram[0][] to sgram[column][]
+
+    scale(display_scale);
 
     for (int i = 0; i < columns-column; i++) {
         for (int j = 0; j < rows; j++) {
             stroke(rotate_hue_with_filter(sgram[j][i+column],90.0));
-            point(i,height-j);
+            point(i,rows-j);
         }
     }
     for (int i = 0; i < column; i++) {
         for (int j = 0; j < rows; j++) {
             stroke(rotate_hue_with_filter(sgram[j][i],90.0));
-            point(i+columns-column,height-j);
+            point(i+columns-column,rows-j);
         }
     }
     return true;

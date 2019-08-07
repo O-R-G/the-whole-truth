@@ -144,7 +144,7 @@ public void draw() {
                 fft_time = int(float(data[0]) * 1000);
             }
             current_time = int(videoExport.getCurrentTime()*1000);
-            // println(current_time + " : " + fft_time);
+            println(current_time + " : " + fft_time);
             if (current_time >= audio_duration) {
                 println("End of audio, stopping video export.");
                 videoExport.endMovie();

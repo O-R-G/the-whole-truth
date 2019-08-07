@@ -32,7 +32,7 @@ int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
-float display_scale = 1.5   // adjust to match size() [1,1.5]
+float display_scale = 1.5;  // adjust to match size() [1,1.5]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 String file_name = "the-whole-truth.wav";

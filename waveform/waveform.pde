@@ -25,16 +25,17 @@ Minim minim;
 AudioPlayer sample;
 FFT fft;
 PFont mono;
+float[] waveform; 
 
 int millis_start = 0;       // when audio starts playing (millis)
 int current_time = 0;       // position in soundfile (millis)
 int amplitude_time = 0;     // position in datafile for rendering (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
-int display_scale = 2;      // adjust to match size()
+float display_scale = 1.0;  // adjust to match size() [0.5,1.0,1.5]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
-String file_name = "the-whole-truth.wav";
+String file_name = "the-whole-truth-dev.wav";
 String sketch_name = "waveform";
 
 float sample_rate = 48000;  // from the audio file
@@ -46,14 +47,21 @@ int buffer_size = 1024;     // must be a power of 2 [512,1024,2048]
 int samples = 102;          // how much of waveform to display
 int video_fps = 30;
 int audio_duration;
-Boolean debug = false;      // display time debug
+Boolean debug = false;       // display time debug
 Boolean mute = false;       // no sound
 Boolean sync = false;       // start audio w/sync_sample()
 Boolean render = true;      // render audio to txt, read txt, output video
 Boolean video = true;       // export video when rendering
+Boolean offline = false;    // pre-analyze to txt, read 
+                            // this produces an oscilloscope 
+                            // granularity based on samples to display
+                            // waveform looks better live when playing
+                            // so leave this false for now
 
 public void setup() {
-    size(640, 360);
+    // size(320, 180, FX2D);    // display_scale = 0.5 (360p @2x))
+    size(640, 360, FX2D);       // display_scale = 1.0 (720p @2x))
+    // size(960, 540, FX2D);    // display_scale = 1.5 (1080p @2x)
     pixelDensity(displayDensity());
     background(0);
     noStroke();
@@ -64,20 +72,21 @@ public void setup() {
     textFont(mono);
 
     if (render) {
-        // frameRate(1000);
-        frameRate(30);
-        // int samples_stub = render_audio_amplitude_to_txt(data_path + file_name, buffer_size);
-        // reader = createReader(data_path + file_name + ".txt");
         minim = new Minim(this);
         sample = minim.loadFile(data_path + file_name, buffer_size);
         audio_duration = sample.length();
-        // sample.close();
-        // minim.stop();
-        // * temp * until render_audio_amplitude_to_text() works
-        if (sync)
-            sync_sample();
-        else
+        if (offline) {
+            frameRate(1000);
+            int samples_stub = render_audio_amplitude_to_txt(data_path + file_name, buffer_size, false);
+            reader = createReader(data_path + file_name + ".txt");
+            waveform = new float[buffer_size];
+            init_waveform(1024);
+            sample.close();
+            minim.stop();
+        } else {
+            frameRate(30);
             play_sample();
+        }
         String[] file_name_split = split(file_name, '.');
         String video_file_name = "out/" + file_name_split[0] + "-" + sketch_name + ".mp4";
         videoExport = new VideoExport(this);
@@ -87,7 +96,8 @@ public void setup() {
         videoExport.startMovie();
         playing = true;      
     } else {
-        frameRate(30);
+        // frameRate(30);
+        frameRate(1000);
         minim = new Minim(this);
         sample = minim.loadFile(data_path + file_name, buffer_size);
         if (sync)
@@ -106,17 +116,16 @@ public void draw() {
     if (playing) {
         if (render) {
             // movie will have 30 frames per second.
-            // FFT analysis probably produces
-            // 43 rows per second (44100 / fftSize) or
-            // 46.875 rows per second (48000 / fftSize).
-            // we have two different data rates: 30fps vs 43rps.
+            // analysis probably produces
+            // 48 rows per second (48000 Hz) or
+            // we have two different data rates: 30fps vs 48rps.
             // how to deal with that? We render frames as
             // long as the movie time is less than the latest
             // data (sound) time.
 
             // solution is to make sure current_time comes from the
-            // video export, and then checks against the fft time stamps
-            // to move the fft forward, reference the correct one.
+            // video export, and then checks against the time stamps
+            // to move the level forward, reference the correct one.
             // videoExport is the master, determines current_time
             // fft forward by reading next line from buffered reader
             // which holds the fft data. also reads from txt file
@@ -124,29 +133,42 @@ public void draw() {
             // String data[] is local then these are independent
             // pointers to current line in the file.
 
-            /*
-            if (current_time > amplitude_time) {
-                String data[] = read_audio_from_txt(bands, video);
-                amplitude_time = int(float(data[0]) * 1000);
-            }
-            */
             current_time = int(videoExport.getCurrentTime()*1000);
-            println(current_time + " : " + amplitude_time);
+            // println(current_time + " : " + amplitude_time);
             if (current_time >= audio_duration) {
                 println("End of audio, stopping video export.");
                 videoExport.endMovie();
                 exit();
             }
+            if (offline) {
+                if (current_time > amplitude_time) {
+                    // 1024 columns in .txt file, [0] = time [1] = rms
+                    String data[] = read_audio_from_txt(samples, video);
+                    amplitude_time = int(float(data[0]) * 1000);
+                    waveform = float(data);
+                }
+                beginShape();
+                    for(int i = 1; i <= samples; i++){
+                        int j = i * int(buffer_size/samples);
+                        vertex(
+                            map(i, 0, samples, 0, width),
+                            map(waveform[j], -1, 1, 0, height)
+                        );
+                    }
+                endShape();
+            } 
         } else
             current_time = millis() - millis_start;
-        beginShape();
-        for(int i = 0; i <= samples; i++){
-            vertex(
-                map(i, 0, samples, 0, width),
-                map(sample.left.get(i), -1, 1, 0, height)
-            );
+        if (!offline) {
+            beginShape();
+                for(int i = 0; i <= samples; i++){
+                    vertex(
+                        map(i, 0, samples, 0, width),
+                        map(sample.left.get(i), -1, 1, 0, height)
+                    );
+                }
+            endShape();
         }
-        endShape();
         if (debug)
             show_current_time(width-100, 24);
         if (video)
@@ -156,6 +178,17 @@ public void draw() {
     counter++;
 }
 
+/*
+
+    waveform
+
+*/
+
+Boolean init_waveform(int samples_stub) {
+    for (int i = 0; i < samples_stub; i++)
+        waveform[i] = 0.5;
+    return true;
+}
 
 /*
 

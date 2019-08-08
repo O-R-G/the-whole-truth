@@ -96,15 +96,11 @@ int render_audio_fft_to_txt(String file_name, int buffer_size) {
     output.flush();
     output.close();
     println(bands + " bands");
-    println(bands + " bands");
     println("FFT done.");
     return bands;   
 }
 
-
-// this is * CLOSE * but not yet working
-// it stalls out on something like 12.376 time stamp
-int render_audio_amplitude_to_txt(String file_name, int buffer_size) {
+int render_audio_amplitude_to_txt(String file_name, int buffer_size, Boolean rms) {
 
     // minim based audio amplitude to data text file conversion.
     // non real-time, so you don't wait 5 minutes for a 5 minute song 
@@ -126,8 +122,13 @@ int render_audio_amplitude_to_txt(String file_name, int buffer_size) {
     float[] samples = sample.getChannel(AudioSample.LEFT);
     float[] amplitude_samples = new float[buffer_size];
     int total_chunks = (samples.length / buffer_size) + 1;
+    println("sample.bufferSize : " + sample.bufferSize());
+    println("samples.length : " + samples.length);
+    println("total_chunks : " + total_chunks);
 
     // manually sift through samples, one buffer at a time
+
+    // 1. iterate through buffers
     for (int j = 0; j < total_chunks; j++) {
         int chunk_start_index = j * buffer_size;   
         int chunk_size = min(samples.length - chunk_start_index, buffer_size);
@@ -135,8 +136,29 @@ int render_audio_amplitude_to_txt(String file_name, int buffer_size) {
         if (chunk_size < buffer_size)
             java.util.Arrays.fill(amplitude_samples, chunk_size, amplitude_samples.length - 1, 0.0);
         StringBuilder msg = new StringBuilder(nf(chunk_start_index/sample_rate, 0, 3).replace(',', '.'));
-        msg.append(SEP + nf(amplitude_samples[j], 0, 4).replace(',', '.'));
-        output.println(msg.toString());
+        float mean_square = 0.0;
+
+        // 2. iterate through samples in buffer 
+        if (rms) {
+            // one option is producing one value, rms (per sample) 
+            for (int i = 0; i < buffer_size; i++) {    
+                // need to calculate root mean square over all of these and then write one value
+                // https://en.wikipedia.org/wiki/Root_mean_square
+                // each time square current value and add to total
+                // then take square root of all 1024 (buffer_size) sample values
+                // to get a level() for one buffer            
+                mean_square += sq(amplitude_samples[i]);
+            }
+            mean_square /= buffer_size;
+            float root_mean_square = sqrt(mean_square);
+            msg.append(SEP + nf(root_mean_square, 0, 4).replace(',', '.'));
+            output.println(msg.toString());
+        } else {
+            // write all sample values (buffer_size)
+            for (int i = 0; i < buffer_size; i++)
+                msg.append(SEP + nf(amplitude_samples[i], 0, 4).replace(',', '.'));
+            output.println(msg.toString());
+        }
     }
     sample.close();
     minim.stop();
@@ -144,17 +166,17 @@ int render_audio_amplitude_to_txt(String file_name, int buffer_size) {
     output.close();
     println(total_chunks + " samples");
     println("Amplitude done.");
-    return total_chunks;   // really should be samples_number
+    return total_chunks;   // ie, number of samples
 }
 
-String[] read_audio_from_txt(int bands, Boolean video) {
+String[] read_audio_from_txt(int columns, Boolean video) {
 
     // read from the txt file, line by line
     // requires existing BufferedReader reader
     // data[0] is always time in seconds (float)            
 
     String line;
-    String[] data = new String[bands];   
+    String[] data = new String[columns];
     try {
         line = reader.readLine();
     }

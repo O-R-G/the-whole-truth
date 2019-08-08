@@ -39,7 +39,7 @@ int current_time = 0;       // position in soundfile (millis)
 int fft_time = 0;           // position in datafile for rendering (millis)
 int pointer;                // current index in verdicts[]
 int counter;                // draw loop
-float display_scale = 1.5;  // adjust to match size() [0.5,1.0,1.5]
+float display_scale = 1.0;  // adjust to match size() [0.5,1.0,1.5]
 Boolean playing = false;
 String data_path = "/Users/reinfurt/Documents/Softwares/Processing/the_whole_truth/data/";
 String file_name = "the-whole-truth.wav";
@@ -68,8 +68,8 @@ Boolean video = true;       // export video when rendering
 
 public void setup() {
     // size(180, 320, FX2D);    // display_scale = 0.5 (360p @2x))
-    // size(360, 640, FX2D);    // display_scale = 1.0 (720p @2x))
-    size(540, 960, FX2D);       // display_scale = 1.5 (1080p @2x)
+    size(360, 640, FX2D);    // display_scale = 1.0 (720p @2x))
+    // size(540, 960, FX2D);       // display_scale = 1.5 (1080p @2x)
     pixelDensity(displayDensity());
     background(0);
     noStroke();

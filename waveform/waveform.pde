@@ -59,9 +59,9 @@ Boolean offline = false;    // pre-analyze to txt, read
                             // so leave this false for now
 
 public void setup() {
-    // size(320, 180, FX2D);    // display_scale = 0.5 (360p @2x))
-    size(640, 360, FX2D);       // display_scale = 1.0 (720p @2x))
-    // size(960, 540, FX2D);    // display_scale = 1.5 (1080p @2x)
+    // size(320, 180);      // display_scale = 0.5 (360p @2x))
+    size(640, 360);      // display_scale = 1.0 (720p @2x))
+    // size(960, 540);         // display_scale = 1.5 (1080p @2x))
     pixelDensity(displayDensity());
     background(0);
     noStroke();
